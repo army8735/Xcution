@@ -5,12 +5,16 @@ package me.army8735.xcution.http
   import flash.net.ServerSocket;
   import flash.net.Socket;
   import flash.utils.ByteArray;
+  
+  import me.army8735.xcution.proxy.Proxy;
 
   public class HttpServer
   {
     private var 服务器:ServerSocket = new ServerSocket();
+    private var 地址:String;
     private var 端口号:Number;
     private var 套接字:Socket;
+    private var 代理:Proxy;
     
     public function HttpServer()
     {
@@ -18,9 +22,13 @@ package me.army8735.xcution.http
         服务器.close();
         服务器 = new 服务器();
       }
-      端口号 = 81;
-      服务器.bind(端口号);
-      trace("端口号：", 服务器.localPort);
+      服务器.bind();
+      
+      地址 = 服务器.localAddress;
+      端口号 = 服务器.localPort;
+      Proxy.设置(地址, 端口号);
+      trace("服务器:" + 地址, "端口号：", 端口号);
+      
       服务器.addEventListener(ServerSocketConnectEvent.CONNECT, 新链接侦听);
       服务器.listen();
     }

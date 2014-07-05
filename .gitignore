@@ -213,3 +213,4 @@ pip-log.txt
 .idea/
 node_modules/
 tests/covrage.html
+*.bat
