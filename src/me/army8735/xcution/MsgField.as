@@ -12,6 +12,7 @@ package me.army8735.xcution
 		private var 滚动条:UIScrollBar;
 		private var 默认样式:TextFormat;
 		private var 高亮样式:TextFormat;
+    private var 警告样式:TextFormat;
 		private var 错误样式:TextFormat;
 		
 		public function MsgField()
@@ -21,6 +22,7 @@ package me.army8735.xcution
 			默认样式 = new TextFormat();
 			默认样式.font = "宋体";
 			默认样式.color = 0x404040;
+      默认样式.leading = 4;
 			文本框.defaultTextFormat = 默认样式;
 			文本框.x = 10;
 			文本框.y = 5;
@@ -35,6 +37,8 @@ package me.army8735.xcution
 			
 			高亮样式 = new TextFormat();
 			高亮样式.color = 0x0000FF;
+      警告样式 = new TextFormat();
+      警告样式.color = 0xFF9900;
 			错误样式 = new TextFormat();
 			错误样式.color = 0xFF0000;
 		}
@@ -54,18 +58,28 @@ package me.army8735.xcution
 			y = stage.stageHeight >> 1;
 		}
 		public function 追加(s:String):void {
+      if(!/\n$/.test(s)) s += "\n";
 			文本框.appendText(s);
 			文本框.setTextFormat(默认样式, 文本框.text.length - s.length, 文本框.text.length);
 			文本框.scrollV = 文本框.numLines;
 			滚动条.update();
 		}
 		public function 追加高亮(s:String):void {
+      if(!/\n$/.test(s)) s += "\n";
 			文本框.appendText(s);
 			文本框.setTextFormat(高亮样式, 文本框.text.length - s.length, 文本框.text.length);
 			文本框.scrollV = 文本框.numLines;
 			滚动条.update();
 		}
+    public function 追加警告(s:String):void {
+      if(!/\n$/.test(s)) s += "\n";
+      文本框.appendText(s);
+      文本框.setTextFormat(警告样式, 文本框.text.length - s.length, 文本框.text.length);
+      文本框.scrollV = 文本框.numLines;
+      滚动条.update();
+    }
 		public function 追加错误(s:String):void {
+      if(!/\n$/.test(s)) s += "\n";
 			文本框.appendText(s);
 			文本框.setTextFormat(错误样式, 文本框.text.length - s.length, 文本框.text.length);
 			文本框.scrollV = 文本框.numLines;

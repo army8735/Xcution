@@ -66,7 +66,6 @@ package me.army8735.xcution
     
     public function alt():Boolean {
       状态标识 = !状态标识;
-      trace(状态标识);
       if(状态标识)
       {
         普通文本.text = 文字3;

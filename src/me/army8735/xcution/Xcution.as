@@ -21,18 +21,20 @@ package me.army8735.xcution
       stage.scaleMode = StageScaleMode.NO_SCALE;
       stage.align = StageAlign.TOP_LEFT;
       
-      服务器 = new HttpServer();
-      
       控制台 = new MsgField();
       addChild(控制台);
       
-      按钮们 = new Btns();
+      服务器 = new HttpServer(控制台);
+      addChild(服务器);
+      
+      按钮们 = new Btns(控制台, 服务器);
       addChild(按钮们);
       
       stage.addEventListener(Event.RESIZE, 重置);
       重置();
     }
     private function 重置(event:Event = null):void {
+      服务器.重置();
       控制台.重置();
       按钮们.重置();
       
