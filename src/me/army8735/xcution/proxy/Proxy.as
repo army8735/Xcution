@@ -3,6 +3,7 @@ package me.army8735.xcution.proxy
   import flash.desktop.NativeApplication;
   import flash.desktop.NativeProcess;
   import flash.desktop.NativeProcessStartupInfo;
+  import flash.errors.IOError;
   import flash.events.Event;
   import flash.events.ProgressEvent;
   import flash.filesystem.File;
@@ -19,7 +20,7 @@ package me.army8735.xcution.proxy
     private static const 设置尾:String = '" /f\r\n@echo switch on ';
     private static const 取消体:String = '@echo off\r\nreg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 0 /f\r\nreg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyServer /d "" /f\r\n@echo switch off';
     private static const 编码:String = File.systemCharset;
-    private static var 执行文件:File = new File(File.userDirectory.url + File.separator + "temp.bat");
+    private static var 执行文件:File = File.userDirectory.resolvePath("xcution.temp.bat");
     
     public static function 设置(服务地址:String, 控制台:MsgField):void {
       if(/windows/i.test(Capabilities.os))
@@ -56,6 +57,11 @@ package me.army8735.xcution.proxy
           if(s.indexOf("switch on") >= 0) {
             控制台.追加高亮("开启代理模式");
             本地进程.exit(true);
+            if(执行文件.exists) {
+              try {
+                执行文件.deleteFile();
+              } catch(error:IOError) {}
+            }
             刷新(控制台);
           }
         });
@@ -63,6 +69,11 @@ package me.army8735.xcution.proxy
           var s:String = 本地进程.standardError.readMultiByte(本地进程.standardError.bytesAvailable, 编码);
           控制台.追加错误(s);
           本地进程.exit(true);
+          if(执行文件.exists) {
+            try {
+              执行文件.deleteFile();
+            } catch(error:IOError) {}
+          }
         });
         NativeApplication.nativeApplication.addEventListener(Event.EXITING, function():void {
           本地进程.exit(true);
@@ -103,7 +114,22 @@ package me.army8735.xcution.proxy
           if(s.indexOf("switch off") >= 0) {
             控制台.追加高亮("关闭代理模式");
             本地进程.exit(true);
+            if(执行文件.exists) {
+              try {
+                执行文件.deleteFile();
+              } catch(error:IOError) {}
+            }
             刷新(控制台);
+          }
+        });
+        本地进程.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, function(event:ProgressEvent):void {
+          var s:String = 本地进程.standardError.readMultiByte(本地进程.standardError.bytesAvailable, 编码);
+          控制台.追加错误(s);
+          本地进程.exit(true);
+          if(执行文件.exists) {
+            try {
+              执行文件.deleteFile();
+            } catch(error:IOError) {}
           }
         });
         NativeApplication.nativeApplication.addEventListener(Event.EXITING, function():void {
@@ -128,6 +154,11 @@ package me.army8735.xcution.proxy
         本地进程.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, function(event:ProgressEvent):void {
           var s:String = 本地进程.standardOutput.readMultiByte(本地进程.standardOutput.bytesAvailable, 编码);
           控制台.追加(s);
+        });
+        本地进程.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, function(event:ProgressEvent):void {
+          var s:String = 本地进程.standardError.readMultiByte(本地进程.standardError.bytesAvailable, 编码);
+          控制台.追加错误(s);
+          本地进程.exit(true);
         });
         NativeApplication.nativeApplication.addEventListener(Event.EXITING, function():void {
           本地进程.exit(true);

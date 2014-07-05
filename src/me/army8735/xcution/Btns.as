@@ -8,12 +8,12 @@ package me.army8735.xcution
 	
 	public class Btns extends Sprite
 	{
-		private var 运行:Btn;
+		private var 运行:CustomButton;
 		
 		public function Btns(控制台:MsgField, 服务器:HttpServer)
 		{
-      运行 = new Btn();
-      运行.x = 10;
+      运行 = new CustomButton();
+      运行.x = 5;
       运行.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
         运行.alt();
         var 状态:Boolean = 运行.状态();
@@ -28,7 +28,7 @@ package me.army8735.xcution
 		}
 		
 		public function 重置():void {
-			运行.y = stage.stageHeight - 37;
+			运行.y = stage.stageHeight - 34;
 		}
 	}
 }
