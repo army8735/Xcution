@@ -58,28 +58,36 @@ package me.army8735.xcution
 			y = stage.stageHeight >> 1;
 		}
 		public function 追加(s:String):void {
-      if(!/\n$/.test(s)) s += "\n";
+      s = s.replace(/\r\n/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
+      trace(s);
+      s += "\n";
 			文本框.appendText(s);
 			文本框.setTextFormat(默认样式, 文本框.text.length - s.length, 文本框.text.length);
 			文本框.scrollV = 文本框.numLines;
 			滚动条.update();
 		}
 		public function 追加高亮(s:String):void {
-      if(!/\n$/.test(s)) s += "\n";
+      s = s.replace(/\r\n/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
+      trace(s);
+      s += "\n";
 			文本框.appendText(s);
 			文本框.setTextFormat(高亮样式, 文本框.text.length - s.length, 文本框.text.length);
 			文本框.scrollV = 文本框.numLines;
 			滚动条.update();
 		}
     public function 追加警告(s:String):void {
-      if(!/\n$/.test(s)) s += "\n";
+      s = s.replace(/\r\n/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
+      trace(s);
+      s += "\n";
       文本框.appendText(s);
       文本框.setTextFormat(警告样式, 文本框.text.length - s.length, 文本框.text.length);
       文本框.scrollV = 文本框.numLines;
       滚动条.update();
     }
 		public function 追加错误(s:String):void {
-      if(!/\n$/.test(s)) s += "\n";
+      s = s.replace(/\r\n/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
+      trace(s);
+      s += "\n";
 			文本框.appendText(s);
 			文本框.setTextFormat(错误样式, 文本框.text.length - s.length, 文本框.text.length);
 			文本框.scrollV = 文本框.numLines;

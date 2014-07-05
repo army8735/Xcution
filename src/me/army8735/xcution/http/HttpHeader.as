@@ -18,6 +18,7 @@ package me.army8735.xcution.http
         var 键:String = 数据[0];
         if(键 == "GET" || 键 == "POST") {
           this.方法名 = 键;
+          this.路径名 = 数据[1];
         }
       });
     }
