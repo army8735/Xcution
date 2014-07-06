@@ -20,35 +20,19 @@ package me.army8735.xcution.http
     private var 端口号:int;
     private var 套接字:Socket;
     private var 消息框:TextField;
+    private var 控制台:MsgField;
     
-    public function HttpServer(控制台:MsgField, 地址列表:Vector.<String>)
+    public function HttpServer(控制台:MsgField, 地址:String)
     {
-      if(服务器.bound) {
-        服务器.close();
-        服务器 = new 服务器();
-      }
-      服务器.bind(0, 地址列表[0]);
-      
-      地址 = 服务器.localAddress;
-      端口号 = 服务器.localPort;
-      trace("服务器:", 地址, "端口号：", 端口号);
-      控制台.追加警告("已开启随机端口：" + 地址 + ":" + 端口号);
+      this.控制台 = 控制台;
       
       消息框 = new TextField();
       var 样式:TextFormat = new TextFormat();
       样式.font = "宋体";
       消息框.defaultTextFormat = 样式;
-      消息框.text = 地址 + ":" + 端口号;
-      消息框.width = 消息框.textWidth + 4;
-      消息框.height = 消息框.textHeight + 4;
       addChild(消息框);
       
-      服务器.addEventListener(ServerSocketConnectEvent.CONNECT, 新链接侦听);
-      服务器.listen();
-      
-      NativeApplication.nativeApplication.addEventListener(Event.EXITING, function():void {
-        服务器.close();
-      });
+      切换地址(地址, true);
     }
     public function get 服务地址():String {
       return 地址 + ":" + 端口号;
@@ -56,6 +40,34 @@ package me.army8735.xcution.http
     public function 重置():void {
       x = stage.stageWidth - 消息框.width - 5;
       y = 5;
+    }
+    public function 切换地址(地址:String, 首次:Boolean = false):void {
+      if(服务器.bound) {
+        服务器.close();
+        服务器 = new ServerSocket();
+      }
+      trace("地址:", 地址);
+      服务器.bind(0, 地址);
+      地址 = 服务器.localAddress;
+      端口号 = 服务器.localPort;
+      trace("服务器:", 地址, "端口号：", 端口号);
+      控制台.追加警告("已开启随机端口：" + 地址 + ":" + 端口号);
+      
+      消息框.text = 地址 + ":" + 端口号;
+      消息框.width = 消息框.textWidth + 4;
+      消息框.height = 消息框.textHeight + 4;
+      if(!首次) {
+        重置();
+      }
+      
+      服务器.addEventListener(ServerSocketConnectEvent.CONNECT, 新链接侦听);
+      服务器.listen();
+      
+      NativeApplication.nativeApplication.addEventListener(Event.EXITING, function():void {
+        if(服务器.bound) {
+          服务器.close();
+        }
+      });
     }
     private function 新链接侦听(event:ServerSocketConnectEvent):void {
       套接字 = event.socket;
