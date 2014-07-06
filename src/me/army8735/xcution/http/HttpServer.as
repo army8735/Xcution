@@ -14,6 +14,15 @@ package me.army8735.xcution.http
   import me.army8735.xcution.Btns;
   import me.army8735.xcution.MsgField;
   import me.army8735.xcution.proxy.Proxy;
+  
+  import org.httpclient.HttpClient;
+  import org.httpclient.HttpRequest;
+  import org.httpclient.events.HttpErrorEvent;
+  import org.httpclient.events.HttpResponseEvent;
+  import org.httpclient.http.Get;
+  import org.httpclient.http.Post;
+  
+  import com.adobe.net.URI;
 
   public class HttpServer extends Sprite
   {
@@ -82,14 +91,14 @@ package me.army8735.xcution.http
     }
     private function 新链接侦听(event:ServerSocketConnectEvent):void {
       套接字 = event.socket;
-      套接字.addEventListener(ProgressEvent.SOCKET_DATA, 数据侦听);
       trace("新链接来自：", 套接字.remoteAddress + ":" + 套接字.remotePort);
+      套接字.addEventListener(ProgressEvent.SOCKET_DATA, 数据侦听);
     }
     private function 数据侦听(event:ProgressEvent):void {
       var 缓冲:ByteArray = new ByteArray();
       套接字.readBytes(缓冲, 0, 套接字.bytesAvailable);
       var 内容:String = 缓冲.toString();
-      trace("接收数据：\n", 内容.replace(/\r\n/g, "\n"));
+      trace("接收数据：", 内容.replace(/\r\n/g, "\n"));
       try
       {
         if(套接字 != null && 套接字.connected)
@@ -99,9 +108,29 @@ package me.army8735.xcution.http
             套接字.flush();
           }
           else {
-            var 头:HttpHeader = new HttpHeader(内容);
+            var 索引:int = 内容.indexOf("\r\n");
+            var 行:HttpLine = new HttpLine(内容.substring(0, 索引));
+            var 头体:Array = 内容.substr(索引 + 2).split("\r\n\r\n");
+            var 头:HttpHead = new HttpHead(头体[0]);
+            var 体:HttpBody = new HttpBody(头体[1]);
+            
+            var 请求端:HttpClient = new HttpClient();
+            var 请求:HttpRequest = 行.方法 == "GET" ? new Get() : new Post();
+            for(var 键:String in 头.键值对) {
+              请求.addHeader(键, 头.获取(键));
+            }
+            请求.body = 头体[1];
+            请求端.listener.onComplete = function(event:HttpResponseEvent):void {
+              trace(event);
+              trace(event.response);
+            };
+            请求端.listener.onError = function(event:HttpErrorEvent):void {
+              trace(event);
+              trace(event.text);
+            };
+            请求端.request(new URI(行.路径), 请求);
+            控制台.追加高亮("远程连接：" + 行.路径 + ":" + 行.端口);
           }
-          trace("Sent message to", 套接字.remoteAddress, ":", 套接字.remotePort);
         }
         else 
         {
