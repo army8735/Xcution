@@ -11,7 +11,9 @@ package me.army8735.xcution.http
   import flash.text.TextFormat;
   import flash.utils.ByteArray;
   
+  import me.army8735.xcution.Btns;
   import me.army8735.xcution.MsgField;
+  import me.army8735.xcution.proxy.Proxy;
 
   public class HttpServer extends Sprite
   {
@@ -21,6 +23,7 @@ package me.army8735.xcution.http
     private var 套接字:Socket;
     private var 消息框:TextField;
     private var 控制台:MsgField;
+    private var 按钮们引用:Btns;
     
     public function HttpServer(控制台:MsgField, 地址:String)
     {
@@ -44,13 +47,14 @@ package me.army8735.xcution.http
     public function 切换地址(地址:String, 首次:Boolean = false):void {
       if(服务器.bound) {
         服务器.close();
+        控制台.追加高亮("已关闭随机端口：" + 服务地址);
         服务器 = new ServerSocket();
       }
       trace("地址:", 地址);
       服务器.bind(0, 地址);
-      地址 = 服务器.localAddress;
+      this.地址 = 服务器.localAddress;
       端口号 = 服务器.localPort;
-      trace("服务器:", 地址, "端口号：", 端口号);
+      trace("服务器:", 服务地址);
       控制台.追加警告("已开启随机端口：" + 地址 + ":" + 端口号);
       
       消息框.text = 地址 + ":" + 端口号;
@@ -58,6 +62,10 @@ package me.army8735.xcution.http
       消息框.height = 消息框.textHeight + 4;
       if(!首次) {
         重置();
+        var 状态:Boolean = 按钮们引用.运行按钮.状态();
+        if(状态) {
+          Proxy.设置(服务地址, 控制台);
+        }
       }
       
       服务器.addEventListener(ServerSocketConnectEvent.CONNECT, 新链接侦听);
@@ -68,6 +76,9 @@ package me.army8735.xcution.http
           服务器.close();
         }
       });
+    }
+    public function set 按钮们(按钮们引用:Btns):void {
+      this.按钮们引用 = 按钮们引用;
     }
     private function 新链接侦听(event:ServerSocketConnectEvent):void {
       套接字 = event.socket;

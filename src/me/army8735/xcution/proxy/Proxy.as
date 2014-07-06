@@ -11,6 +11,7 @@ package me.army8735.xcution.proxy
   import flash.filesystem.FileStream;
   import flash.system.Capabilities;
   
+  import me.army8735.xcution.EventBus;
   import me.army8735.xcution.MsgField;
   
   public class Proxy
@@ -46,7 +47,7 @@ package me.army8735.xcution.proxy
         
         var 盘符:String = File.desktopDirectory.nativePath.substr(0, 3);
         trace("OS installed Drive:", 盘符);
-        var cmd:File = new File(盘符).resolvePath("Windows/system32/cmd.exe");
+        var cmd:File = new File(盘符).resolvePath("Windows/System32/cmd.exe");
         trace("cmd", cmd.url);
         进程信息.executable = cmd;
         var 参数:Vector.<String> = new Vector.<String>();
@@ -106,7 +107,7 @@ package me.army8735.xcution.proxy
         
         var 盘符:String = File.desktopDirectory.nativePath.substr(0, 3);
         trace("OS installed Drive:", 盘符);
-        var cmd:File = new File(盘符).resolvePath("Windows/system32/cmd.exe");
+        var cmd:File = new File(盘符).resolvePath("Windows/System32/cmd.exe");
         trace("cmd", cmd.url);
         进程信息.executable = cmd;
         var 参数:Vector.<String> = new Vector.<String>();
@@ -147,7 +148,7 @@ package me.army8735.xcution.proxy
         
         var 盘符:String = File.desktopDirectory.nativePath.substr(0, 3);
         trace("OS installed Drive:", 盘符);
-        var ipconfig:File = new File(盘符).resolvePath("Windows/system32/ipconfig.exe");
+        var ipconfig:File = new File(盘符).resolvePath("Windows/System32/ipconfig.exe");
         trace("cmd", ipconfig.url);
         进程信息.executable = ipconfig;
         var 参数:Vector.<String> = new Vector.<String>();
@@ -157,10 +158,12 @@ package me.army8735.xcution.proxy
         本地进程.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, function(event:ProgressEvent):void {
           var s:String = 本地进程.standardOutput.readMultiByte(本地进程.standardOutput.bytesAvailable, 编码);
           控制台.追加(s);
+          EventBus.dispatchEvent(new Event(EventBus.刷新));
         });
         本地进程.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, function(event:ProgressEvent):void {
           var s:String = 本地进程.standardError.readMultiByte(本地进程.standardError.bytesAvailable, 编码);
           控制台.追加错误(s);
+          EventBus.dispatchEvent(new Event(EventBus.刷新));
         });
         本地进程.start(进程信息);
       }

@@ -99,6 +99,7 @@ package me.army8735.xcution
               上次选择.checked = false;
               项.checked = true;
               服务器.切换地址(项.label);
+              上次选择 = 项;
             }
           });
           列表.addItem(项);
