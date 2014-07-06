@@ -5,8 +5,6 @@ package me.army8735.xcution.http
   import flash.events.Event;
   import flash.events.ProgressEvent;
   import flash.events.ServerSocketConnectEvent;
-  import flash.net.NetworkInfo;
-  import flash.net.NetworkInterface;
   import flash.net.ServerSocket;
   import flash.net.Socket;
   import flash.text.TextField;
@@ -19,19 +17,17 @@ package me.army8735.xcution.http
   {
     private var 服务器:ServerSocket = new ServerSocket();
     private var 地址:String;
-    private var 端口号:Number;
+    private var 端口号:int;
     private var 套接字:Socket;
     private var 消息框:TextField;
     
-    public function HttpServer(控制台:MsgField)
+    public function HttpServer(控制台:MsgField, 地址列表:Vector.<String>)
     {
       if(服务器.bound) {
         服务器.close();
         服务器 = new 服务器();
       }
-      var 网络列表:Vector.<NetworkInterface> =  NetworkInfo.networkInfo.findInterfaces();
-      地址 = 网络列表[0].addresses[0].address;
-      服务器.bind(0, 地址);
+      服务器.bind(0, 地址列表[0]);
       
       地址 = 服务器.localAddress;
       端口号 = 服务器.localPort;
@@ -44,6 +40,7 @@ package me.army8735.xcution.http
       消息框.defaultTextFormat = 样式;
       消息框.text = 地址 + ":" + 端口号;
       消息框.width = 消息框.textWidth + 4;
+      消息框.height = 消息框.textHeight + 4;
       addChild(消息框);
       
       服务器.addEventListener(ServerSocketConnectEvent.CONNECT, 新链接侦听);

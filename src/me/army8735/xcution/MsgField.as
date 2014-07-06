@@ -58,7 +58,7 @@ package me.army8735.xcution
 			y = stage.stageHeight >> 1;
 		}
 		public function 追加(s:String):void {
-      s = s.replace(/\r\n/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
+      s = s.replace(/[\r\n]+/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
       trace(s);
       s += "\n";
 			文本框.appendText(s);
@@ -67,7 +67,7 @@ package me.army8735.xcution
 			滚动条.update();
 		}
 		public function 追加高亮(s:String):void {
-      s = s.replace(/\r\n/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
+      s = s.replace(/[\r\n]+/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
       trace(s);
       s += "\n";
 			文本框.appendText(s);
@@ -76,7 +76,7 @@ package me.army8735.xcution
 			滚动条.update();
 		}
     public function 追加警告(s:String):void {
-      s = s.replace(/\r\n/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
+      s = s.replace(/[\r\n]+/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
       trace(s);
       s += "\n";
       文本框.appendText(s);
@@ -85,7 +85,7 @@ package me.army8735.xcution
       滚动条.update();
     }
 		public function 追加错误(s:String):void {
-      s = s.replace(/\r\n/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
+      s = s.replace(/[\r\n]+/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
       trace(s);
       s += "\n";
 			文本框.appendText(s);
