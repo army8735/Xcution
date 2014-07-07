@@ -1,5 +1,7 @@
 package me.army8735.xcution.http
 {
+  import com.adobe.net.URI;
+  
   import flash.desktop.NativeApplication;
   import flash.display.Sprite;
   import flash.events.Event;
@@ -17,12 +19,11 @@ package me.army8735.xcution.http
   
   import org.httpclient.HttpClient;
   import org.httpclient.HttpRequest;
+  import org.httpclient.events.HttpDataEvent;
   import org.httpclient.events.HttpErrorEvent;
   import org.httpclient.events.HttpResponseEvent;
   import org.httpclient.http.Get;
   import org.httpclient.http.Post;
-  
-  import com.adobe.net.URI;
 
   public class HttpServer extends Sprite
   {
@@ -60,7 +61,7 @@ package me.army8735.xcution.http
         服务器 = new ServerSocket();
       }
       trace("地址:", 地址);
-      服务器.bind(0, 地址);
+      服务器.bind(8735, 地址);
       this.地址 = 服务器.localAddress;
       端口号 = 服务器.localPort;
       trace("服务器:", 服务地址);
@@ -120,15 +121,26 @@ package me.army8735.xcution.http
               请求.addHeader(键, 头.获取(键));
             }
             请求.body = 头体[1];
+            
+            var 响应内容:String = "";
+            请求端.listener.onData = function(event:HttpDataEvent):void {
+              响应内容 += event.bytes.toString();
+            };
             请求端.listener.onComplete = function(event:HttpResponseEvent):void {
-              trace(event);
               trace(event.response);
+              套接字.writeUTFBytes("HTTP/1.1 200 OK\r\n");
+              套接字.writeUTFBytes(event.response.header.content);
+              套接字.writeUTFBytes("\r\n");
+              trace(响应内容);
+              套接字.writeUTFBytes(响应内容);
+              套接字.flush();
+              套接字.close();
             };
             请求端.listener.onError = function(event:HttpErrorEvent):void {
               trace(event);
               trace(event.text);
             };
-            请求端.request(new URI(行.路径), 请求);
+            请求端.request(new URI(行.地址), 请求);
             控制台.追加高亮("远程连接：" + 行.路径 + ":" + 行.端口);
           }
         }

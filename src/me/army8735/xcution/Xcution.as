@@ -89,7 +89,6 @@ package me.army8735.xcution
       菜单.addSubmenu(设置, "设置");
       菜单.addSubmenu(帮助, "帮助");
       
-      trace(NativeApplication.supportsMenu);
       stage.nativeWindow.menu = 菜单;
       NativeApplication.nativeApplication.menu = 菜单;
     }
