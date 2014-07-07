@@ -215,3 +215,4 @@ node_modules/
 tests/covrage.html
 *.bat
 bin-release-temp/
+.actionScriptProperties
