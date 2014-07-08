@@ -19,15 +19,7 @@ package me.army8735.xcution.http
   import me.army8735.xcution.Btns;
   import me.army8735.xcution.MsgField;
   import me.army8735.xcution.proxy.Proxy;
-  
-  import org.httpclient.HttpClient;
-  import org.httpclient.HttpRequest;
-  import org.httpclient.events.HttpErrorEvent;
-  import org.httpclient.events.HttpResponseEvent;
-  import org.httpclient.events.HttpStatusEvent;
-  import org.httpclient.events.HttpDataEvent;
-  import org.httpclient.http.Get;
-  import org.httpclient.http.Post;
+  import me.army8735.xcution.events.HttpEvent;
 
   public class HttpServer extends Sprite
   {
@@ -63,11 +55,9 @@ package me.army8735.xcution.http
         控制台.追加高亮("已关闭随机端口：" + 服务地址);
         服务器 = new ServerSocket();
       }
-      trace("地址:", 地址);
       服务器.bind(8735, 地址);
       this.地址 = 服务器.localAddress;
       端口号 = 服务器.localPort;
-      trace("服务器:", 服务地址);
       控制台.追加警告("已开启随机端口：" + 地址 + ":" + 端口号);
       
       消息框.text = 地址 + ":" + 端口号;
@@ -108,71 +98,12 @@ package me.army8735.xcution.http
       {
         if(套接字 != null && 套接字.connected)
         {
-          if(内容 == "") {
-            套接字.writeUTFBytes("HTTP/1.1 100 Continue\r\n");
-            套接字.flush();
-          }
-          else {
-            var 索引:int = 内容.indexOf("\r\n");
-            var 行:HttpLine = new HttpLine(内容.substring(0, 索引));
-            var 头体:Array = 内容.substr(索引 + 2).split("\r\n\r\n");
-            var 头:HttpHead = new HttpHead(头体[0]);
-            var 体:HttpBody = new HttpBody(头体[1]);
-            
-            var 请求端:HttpClient = new HttpClient();
-            var 请求:HttpRequest = 行.方法 == "GET" ? new Get() : new Post();
-            for(var 键:String in 头.键值对) {
-              请求.addHeader(键, 头.获取(键));
-            }
-            请求.body = 头体[1];
-            var 响应数据:ByteArray = new ByteArray();
-            请求端.listener.onStatus = function(event:HttpStatusEvent):void {
-              trace(event);
-              套接字.writeUTFBytes("HTTP/"
-                + event.response.version
-                + " "
-                + event.response.code
-                + " "
-                + event.response.message
-                + "\r\n");
-              套接字.flush();
-            };
-            请求端.listener.onData = function(event:HttpDataEvent):void {
-              trace(event);
-              响应数据.writeBytes(event.bytes);
-            };
-            请求端.listener.onComplete = function(event:HttpResponseEvent):void {
-              trace(event);
-              套接字.writeUTFBytes(event.response.header.content.replace("\r\nTransfer-Encoding:  chunked",""));
-              套接字.writeUTFBytes("\r\n");
-              套接字.writeBytes(响应数据);
-              套接字.flush();
-              套接字.close();
-//              var f:File = File.desktopDirectory.resolvePath("1.txt");
-//              var 文件流:FileStream = new FileStream();
-//              文件流.open(f, FileMode.WRITE);
-//              文件流.writeUTFBytes("HTTP/"
-//                + event.response.version
-//                + " "
-//                + event.response.code
-//                + " "
-//                + event.response.message
-//                + "\r\n");
-//              文件流.writeUTFBytes(event.response.header.content);
-//              文件流.writeUTFBytes("\r\n");
-//              文件流.writeBytes(响应数据);
-//              文件流.close();
-            };
-            请求端.listener.onError = function(event:HttpErrorEvent):void {
-              trace(event);
-              套接字.writeUTFBytes("\r\n");
-              套接字.writeBytes(响应数据);
-              套接字.flush();
-              套接字.close();
-            };
-            请求端.request(new URI(行.地址), 请求);
-            控制台.追加高亮("远程连接：" + 行.地址 + ":" + 行.端口);
-          }
+          var 索引:int = 内容.indexOf("\r\n");
+          var 行:HttpLine = new HttpLine(内容.substring(0, 索引));
+          var 头体:Array = 内容.substr(索引 + 2).split("\r\n\r\n");
+          var 头:HttpHead = new HttpHead(头体[0]);
+          var 体:HttpBody = new HttpBody(头体[1]);
+          远程连接(套接字, 内容, 行, 头, 体);
         }
         else 
         {
@@ -183,6 +114,24 @@ package me.army8735.xcution.http
       {
         trace(error.message);
       }
+    }
+    private function 远程连接(套接字:Socket, 内容:String, 行:HttpLine, 头:HttpHead, 体:HttpBody):void {
+      var 请求:HttpRequest = new HttpRequest(内容, 行, 头, 体);
+      请求.addEventListener(HttpEvent.流, function(event:HttpEvent):void {
+        if(套接字.connected) {
+          套接字.writeBytes(event.数据);
+          套接字.flush();
+        }
+      });
+      请求.addEventListener(HttpEvent.关闭, function(event:HttpEvent):void {
+        if(套接字.connected) {
+          套接字.writeBytes(event.数据);
+          套接字.flush();
+          套接字.close();
+          请求 = null;
+        }
+      });
+      请求.链接();
     }
   }
 }

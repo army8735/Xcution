@@ -27,5 +27,8 @@ package me.army8735.xcution.http
       }
       return "";
     }
+    public function get 内容():String {
+      return 字符串 + "\r\n\r\n";
+    }
   }
 }
