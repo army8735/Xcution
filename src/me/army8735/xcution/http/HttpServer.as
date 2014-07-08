@@ -7,6 +7,9 @@ package me.army8735.xcution.http
   import flash.events.Event;
   import flash.events.ProgressEvent;
   import flash.events.ServerSocketConnectEvent;
+  import flash.filesystem.File;
+  import flash.filesystem.FileMode;
+  import flash.filesystem.FileStream;
   import flash.net.ServerSocket;
   import flash.net.Socket;
   import flash.text.TextField;
@@ -19,9 +22,10 @@ package me.army8735.xcution.http
   
   import org.httpclient.HttpClient;
   import org.httpclient.HttpRequest;
-  import org.httpclient.events.HttpDataEvent;
   import org.httpclient.events.HttpErrorEvent;
   import org.httpclient.events.HttpResponseEvent;
+  import org.httpclient.events.HttpStatusEvent;
+  import org.httpclient.events.HttpDataEvent;
   import org.httpclient.http.Get;
   import org.httpclient.http.Post;
 
@@ -30,7 +34,6 @@ package me.army8735.xcution.http
     private var 服务器:ServerSocket = new ServerSocket();
     private var 地址:String;
     private var 端口号:int;
-    private var 套接字:Socket;
     private var 消息框:TextField;
     private var 控制台:MsgField;
     private var 按钮们引用:Btns;
@@ -91,11 +94,12 @@ package me.army8735.xcution.http
       this.按钮们引用 = 按钮们引用;
     }
     private function 新链接侦听(event:ServerSocketConnectEvent):void {
-      套接字 = event.socket;
+      var 套接字:Socket = event.socket;
       trace("新链接来自：", 套接字.remoteAddress + ":" + 套接字.remotePort);
       套接字.addEventListener(ProgressEvent.SOCKET_DATA, 数据侦听);
     }
     private function 数据侦听(event:ProgressEvent):void {
+      var 套接字:Socket = event.target as Socket;
       var 缓冲:ByteArray = new ByteArray();
       套接字.readBytes(缓冲, 0, 套接字.bytesAvailable);
       var 内容:String = 缓冲.toString();
@@ -121,27 +125,53 @@ package me.army8735.xcution.http
               请求.addHeader(键, 头.获取(键));
             }
             请求.body = 头体[1];
-            
-            var 响应内容:String = "";
+            var 响应数据:ByteArray = new ByteArray();
+            请求端.listener.onStatus = function(event:HttpStatusEvent):void {
+              trace(event);
+              套接字.writeUTFBytes("HTTP/"
+                + event.response.version
+                + " "
+                + event.response.code
+                + " "
+                + event.response.message
+                + "\r\n");
+              套接字.flush();
+            };
             请求端.listener.onData = function(event:HttpDataEvent):void {
-              响应内容 += event.bytes.toString();
+              trace(event);
+              响应数据.writeBytes(event.bytes);
             };
             请求端.listener.onComplete = function(event:HttpResponseEvent):void {
-              trace(event.response);
-              套接字.writeUTFBytes("HTTP/1.1 200 OK\r\n");
-              套接字.writeUTFBytes(event.response.header.content);
+              trace(event);
+              套接字.writeUTFBytes(event.response.header.content.replace("\r\nTransfer-Encoding:  chunked",""));
               套接字.writeUTFBytes("\r\n");
-              trace(响应内容);
-              套接字.writeUTFBytes(响应内容);
+              套接字.writeBytes(响应数据);
               套接字.flush();
               套接字.close();
+//              var f:File = File.desktopDirectory.resolvePath("1.txt");
+//              var 文件流:FileStream = new FileStream();
+//              文件流.open(f, FileMode.WRITE);
+//              文件流.writeUTFBytes("HTTP/"
+//                + event.response.version
+//                + " "
+//                + event.response.code
+//                + " "
+//                + event.response.message
+//                + "\r\n");
+//              文件流.writeUTFBytes(event.response.header.content);
+//              文件流.writeUTFBytes("\r\n");
+//              文件流.writeBytes(响应数据);
+//              文件流.close();
             };
             请求端.listener.onError = function(event:HttpErrorEvent):void {
               trace(event);
-              trace(event.text);
+              套接字.writeUTFBytes("\r\n");
+              套接字.writeBytes(响应数据);
+              套接字.flush();
+              套接字.close();
             };
             请求端.request(new URI(行.地址), 请求);
-            控制台.追加高亮("远程连接：" + 行.路径 + ":" + 行.端口);
+            控制台.追加高亮("远程连接：" + 行.地址 + ":" + 行.端口);
           }
         }
         else 

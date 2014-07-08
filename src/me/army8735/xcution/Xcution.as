@@ -29,7 +29,7 @@ package me.army8735.xcution
       stage.align = StageAlign.TOP_LEFT;
       
       var 地址列表:Vector.<String> = NetIP.获取列表();
-      var 首选地址:String = NetIP.首选地址();
+      var 首选地址:String = NetIP.首选地址(地址列表);
       
       控制台 = new MsgField();
       addChild(控制台);

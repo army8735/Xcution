@@ -19,14 +19,14 @@ package me.army8735.xcution.system
       });
       return 列表;
     }
-    public static function 首选地址():String {
-      var 列表:Vector.<String> = 获取列表();
-      for each(var 地址:String in 列表) {
+    public static function 首选地址(地址列表:Vector.<String> = null):String {
+      地址列表 = 地址列表 || 获取列表();
+      for each(var 地址:String in 地址列表) {
         if(地址 != "127.0.0.1") {
           return 地址;
         }
       }
-      return 列表[0] || null;
+      return 地址列表[0] || null;
     }
     
     public function NetIP()
