@@ -18,5 +18,8 @@ package me.army8735.xcution.events
     public function get 数据():ByteArray {
       return 值;
     }
+    public override function toString():String {
+      return '[HttpEvent type="' + type + '" bytesTotal=' + 值.length + ']';
+    }
   }
 }

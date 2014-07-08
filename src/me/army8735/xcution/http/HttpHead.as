@@ -11,11 +11,17 @@ package me.army8735.xcution.http
     {
       this.字符串 = 字符串;
       字典 = new Dictionary();
+      var 上次键:String;
       字符串.split("\r\n").forEach(function(项:String, 索引:int, 列表:Array):void {
-        var 索引2:int = 项.indexOf(": ");
+        if(/^\s/.test(项)) {
+          字典[上次键] += 项.replace(/^\s/, "");
+          return;
+        }
+        var 索引2:int = 项.indexOf(":");
         var 键:String = 项.substring(0, 索引2);
-        var 值:String = 项.substr(索引2 + 2);
+        var 值:String = 项.substr(索引2 + 1).replace(/^\s/, "");
         字典[键] = 值;
+        上次键 = 键;
       });
     }
     public function get 键值对():Dictionary {

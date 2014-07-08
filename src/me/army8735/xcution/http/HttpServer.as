@@ -18,8 +18,8 @@ package me.army8735.xcution.http
   
   import me.army8735.xcution.Btns;
   import me.army8735.xcution.MsgField;
-  import me.army8735.xcution.proxy.Proxy;
   import me.army8735.xcution.events.HttpEvent;
+  import me.army8735.xcution.proxy.Proxy;
 
   public class HttpServer extends Sprite
   {
@@ -74,7 +74,8 @@ package me.army8735.xcution.http
       服务器.addEventListener(ServerSocketConnectEvent.CONNECT, 新链接侦听);
       服务器.listen();
       
-      NativeApplication.nativeApplication.addEventListener(Event.EXITING, function():void {
+      NativeApplication.nativeApplication.addEventListener(Event.EXITING, function(event:Event):void {
+        trace(event);
         if(服务器.bound) {
           服务器.close();
         }
@@ -84,16 +85,16 @@ package me.army8735.xcution.http
       this.按钮们引用 = 按钮们引用;
     }
     private function 新链接侦听(event:ServerSocketConnectEvent):void {
+      trace(event);
       var 套接字:Socket = event.socket;
-      trace("新链接来自：", 套接字.remoteAddress + ":" + 套接字.remotePort);
       套接字.addEventListener(ProgressEvent.SOCKET_DATA, 数据侦听);
     }
     private function 数据侦听(event:ProgressEvent):void {
+      trace(event);
       var 套接字:Socket = event.target as Socket;
       var 缓冲:ByteArray = new ByteArray();
       套接字.readBytes(缓冲, 0, 套接字.bytesAvailable);
       var 内容:String = 缓冲.toString();
-      trace("接收数据：", 内容.replace(/\r\n/g, "\n"));
       try
       {
         if(套接字 != null && 套接字.connected)
@@ -118,12 +119,14 @@ package me.army8735.xcution.http
     private function 远程连接(套接字:Socket, 内容:String, 行:HttpLine, 头:HttpHead, 体:HttpBody):void {
       var 请求:HttpRequest = new HttpRequest(内容, 行, 头, 体);
       请求.addEventListener(HttpEvent.流, function(event:HttpEvent):void {
+        trace(event);
         if(套接字.connected) {
           套接字.writeBytes(event.数据);
           套接字.flush();
         }
       });
       请求.addEventListener(HttpEvent.关闭, function(event:HttpEvent):void {
+        trace(event);
         if(套接字.connected) {
           套接字.writeBytes(event.数据);
           套接字.flush();
