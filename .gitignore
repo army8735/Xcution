@@ -216,3 +216,4 @@ tests/covrage.html
 *.bat
 bin-release-temp/
 .actionScriptProperties
+.settings
