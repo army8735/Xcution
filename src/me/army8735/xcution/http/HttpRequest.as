@@ -5,15 +5,15 @@ package me.army8735.xcution.http
   import flash.events.IOErrorEvent;
   import flash.events.ProgressEvent;
   import flash.events.SecurityErrorEvent;
-  import flash.events.TimerEvent;
   import flash.net.Socket;
   import flash.utils.ByteArray;
-  import flash.utils.Timer;
   
   import me.army8735.xcution.events.HttpEvent;
   
   public class HttpRequest extends EventDispatcher
   {
+    private var 客户端:Socket;
+    
     private var 套接字:Socket;
     private var 行:RequestLine;
     private var 头:HttpHead;
@@ -30,8 +30,9 @@ package me.army8735.xcution.http
     
     private static const 错误码:String = "HTTP/1.1 404 Not found\r\n";
     
-    public function HttpRequest(原始内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody)
+    public function HttpRequest(客户端:Socket, 行:RequestLine, 头:HttpHead, 体:HttpBody)
     {
+      this.客户端 = 客户端;
       this.行 = 行;
       this.头 = 头;
       this.体 = 体;
@@ -74,7 +75,7 @@ package me.army8735.xcution.http
         套接字.flush();
       });
       套接字.addEventListener(ProgressEvent.SOCKET_DATA, function(event:ProgressEvent):void {
-        trace("远程链接数据：", 行.地址);
+        trace("远程链接数据：", 套接字.bytesAvailable, 行.地址);
         if(套接字.bytesAvailable > 0) {
           var 数据:ByteArray = new ByteArray();
           套接字.readBytes(数据, 0, 套接字.bytesAvailable);
@@ -83,6 +84,16 @@ package me.army8735.xcution.http
       });
       套接字.addEventListener(Event.CLOSE, function(event:Event):void {
         trace("远程链接关闭：", 行.地址);
+        if(套接字 && 套接字.bytesAvailable > 0) {
+          var 数据:ByteArray = new ByteArray();
+          套接字.readBytes(数据, 0, 套接字.bytesAvailable);
+          if(客户端 && 客户端.connected) {
+            客户端.writeBytes(数据);
+            客户端.flush();
+            客户端.close();
+            客户端 = null;
+          }
+        }
         if(套接字 && 套接字.connected) {
           套接字.close();
           套接字 = null;
@@ -102,7 +113,8 @@ package me.army8735.xcution.http
               状态 = 完成头;
               var 头数据:ByteArray = new ByteArray();
               数据.readBytes(头数据, 0, 索引+4);
-              dispatchEvent(new HttpEvent(HttpEvent.流, 头数据));
+              客户端.writeBytes(头数据);
+              客户端.flush();
               
               var 内容:String = 头数据.toString();
               索引 = 内容.indexOf("\r\n");
@@ -141,35 +153,36 @@ package me.army8735.xcution.http
                 && 数据[索引-3] == 13
                 && 数据[索引-4] == 48) {
                 trace("块结束主动关闭：", 累计, 总长度, this.行.地址);
-                延迟发送关闭(数据);
+                客户端.writeBytes(数据);
+                客户端.flush();
+                客户端.close();
                 if(套接字 && 套接字.connected) {
                   套接字.close();
                 }
                 套接字 = null;
               }
+              else {
+                客户端.writeBytes(数据);
+                客户端.flush();
+              }
             }
             else if(总长度 > -1 && 累计 == 总长度) {
               trace("总长度主动关闭：", 累计, 总长度, this.行.地址);
-              延迟发送关闭(数据);
+              客户端.writeBytes(数据);
+              客户端.flush();
+              客户端.close();
               if(套接字 && 套接字.connected) {
                 套接字.close();
               }
               套接字 = null;
             }
             else {
-              dispatchEvent(new HttpEvent(HttpEvent.流, 数据));
+              客户端.writeBytes(数据);
+              客户端.flush();
             }
           }
           break;
       }
-    }
-    private function 延迟发送关闭(数据:ByteArray):void {
-      var 计时器:Timer = new Timer(20, 1);
-      计时器.addEventListener(TimerEvent.TIMER_COMPLETE, function(event:TimerEvent):void {
-        dispatchEvent(new HttpEvent(HttpEvent.关闭, 数据));
-        计时器 = null;
-      });
-      计时器.start();
     }
   }
 }
