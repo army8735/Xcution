@@ -145,7 +145,7 @@ package me.army8735.xcution.http
         套接字 = null;
       });
       套接字.addEventListener(Event.CLOSE, function(event:Event):void {
-        trace("本地连接主动关闭：", 套接字.remoteAddress + ":" + 套接字.remotePort);
+        trace("本地连接主动关闭：", 行.地址);
         if(请求) {
           请求.关闭();
         }

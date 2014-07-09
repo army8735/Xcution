@@ -67,14 +67,14 @@ package me.army8735.xcution.http
         dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
       });
       套接字.addEventListener(Event.CONNECT, function(event:Event):void {
-        trace("发出远程链接：", 行.主机, 行.端口, 套接字.remoteAddress + ":" + 套接字.remotePort);
+        trace("发出远程链接：", 行.地址);
         套接字.writeUTFBytes(行.兼容内容);
         套接字.writeUTFBytes(头.内容);
         套接字.writeUTFBytes(体.内容);
         套接字.flush();
       });
       套接字.addEventListener(ProgressEvent.SOCKET_DATA, function(event:ProgressEvent):void {
-        trace("远程链接数据：", 行.主机, 行.端口, 套接字.remoteAddress + ":" + 套接字.remotePort);
+        trace("远程链接数据：", 行.地址);
         if(套接字.bytesAvailable > 0) {
           var 数据:ByteArray = new ByteArray();
           套接字.readBytes(数据, 0, 套接字.bytesAvailable);
@@ -82,7 +82,7 @@ package me.army8735.xcution.http
         }
       });
       套接字.addEventListener(Event.CLOSE, function(event:Event):void {
-        trace("远程链接关闭：", 行.主机, 行.端口);
+        trace("远程链接关闭：", 行.地址);
         if(套接字 && 套接字.connected) {
           套接字.close();
           套接字 = null;
@@ -140,7 +140,7 @@ package me.army8735.xcution.http
                 && 数据[索引-2] == 10
                 && 数据[索引-3] == 13
                 && 数据[索引-4] == 48) {
-                trace("块结束主动关闭：", 套接字.remoteAddress + ":" + 套接字.remotePort, 累计, 总长度);
+                trace("块结束主动关闭：", 累计, 总长度, this.行.地址);
                 延迟发送关闭(数据);
                 if(套接字 && 套接字.connected) {
                   套接字.close();
@@ -149,7 +149,7 @@ package me.army8735.xcution.http
               }
             }
             else if(总长度 > -1 && 累计 == 总长度) {
-              trace("总长度主动关闭：", 套接字.remoteAddress + ":" + 套接字.remotePort, 累计, 总长度);
+              trace("总长度主动关闭：", 累计, 总长度, this.行.地址);
               延迟发送关闭(数据);
               if(套接字 && 套接字.connected) {
                 套接字.close();
