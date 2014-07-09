@@ -76,6 +76,7 @@ package me.army8735.xcution.http
       套接字.addEventListener(Event.CLOSE, function(event:Event):void {
         trace(event);
         if(套接字.bytesAvailable > 0) {
+          累计 += 接收数据.bytesAvailable;
           套接字.readBytes(接收数据);
         }
         dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
@@ -96,7 +97,6 @@ package me.army8735.xcution.http
               && 接收数据[索引+2] == 13
               && 接收数据[索引+3] == 10) {
               接收数据.readBytes(数据, 0, 索引+4);
-              累计 += 索引+4;
               状态 = 完成头;
               dispatchEvent(new HttpEvent(HttpEvent.流, 数据));
               
@@ -129,9 +129,15 @@ package me.army8735.xcution.http
           break;
         case 完成头:
           if(接收数据.bytesAvailable > 0) {
-            接收数据.readBytes(数据);
             累计 += 接收数据.bytesAvailable;
+            接收数据.readBytes(数据);
             dispatchEvent(new HttpEvent(HttpEvent.流, 数据));
+            
+            if(总长度 > -1) {
+              if(!块传输 && 累计 == 总长度) {
+                套接字.dispatchEvent(new Event(Event.CLOSE));
+              }
+            }
           }
           break;
       }
