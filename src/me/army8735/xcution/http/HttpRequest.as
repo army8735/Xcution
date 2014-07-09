@@ -18,7 +18,7 @@ package me.army8735.xcution.http
     private var 体:HttpBody;
     
     private var 接收数据:ByteArray;
-    private var 累计:int;
+    private var 累计:uint;
     private var 总长度:int;
     private var 块传输:Boolean;
     private var 状态:int;
@@ -76,7 +76,7 @@ package me.army8735.xcution.http
       套接字.addEventListener(Event.CLOSE, function(event:Event):void {
         trace(event);
         if(套接字.bytesAvailable > 0) {
-          累计 += 接收数据.bytesAvailable;
+          累计 = 接收数据.bytesAvailable;
           套接字.readBytes(接收数据);
         }
         dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
@@ -89,15 +89,16 @@ package me.army8735.xcution.http
     }
     private function 分析数据():void {
       var 数据:ByteArray = new ByteArray();
+      var 索引:uint;
       switch(状态) {
         case 开始:
-          for(var 索引:int = 0; 索引 < 接收数据.bytesAvailable; 索引++) {
+          for(索引 = 0; 索引 < 接收数据.bytesAvailable; 索引++) {
             if(接收数据[索引] == 13
               && 接收数据[索引+1] == 10
               && 接收数据[索引+2] == 13
               && 接收数据[索引+3] == 10) {
-              接收数据.readBytes(数据, 0, 索引+4);
               状态 = 完成头;
+              接收数据.readBytes(数据, 0, 索引+4);
               dispatchEvent(new HttpEvent(HttpEvent.流, 数据));
               
               var 内容:String = 数据.toString();
@@ -113,11 +114,9 @@ package me.army8735.xcution.http
               if(长度 !== null) {
                 总长度 = parseInt(长度);
               }
-              else {
-                var 传输编码:String = 头.获取("Transfer-Encoding");
-                if(传输编码 !== null) {
-                  块传输 = true;
-                }
+              var 传输编码:String = 头.获取("Transfer-Encoding");
+              if(传输编码 == "chunked") {
+                块传输 = true;
               }
               
               if(接收数据.bytesAvailable > 0) {
@@ -133,10 +132,19 @@ package me.army8735.xcution.http
             接收数据.readBytes(数据);
             dispatchEvent(new HttpEvent(HttpEvent.流, 数据));
             
-            if(总长度 > -1) {
-              if(!块传输 && 累计 == 总长度) {
-                套接字.dispatchEvent(new Event(Event.CLOSE));
+            if(块传输) {
+              for(索引 = 接收数据.length - 1; 索引 >= 0 && 索引 >= 接收数据.length - 5; 索引--) {
+                if(接收数据[索引] == 10
+                  && 接收数据[索引-1] == 13
+                  && 接收数据[索引-2] == 10
+                  && 接收数据[索引-3] == 13
+                  && 接收数据[索引-4] == 48) {
+                  套接字.dispatchEvent(new Event(Event.CLOSE));
+                }
               }
+            }
+            else if(总长度 > -1 && 累计 == 总长度) {
+              套接字.dispatchEvent(new Event(Event.CLOSE));
             }
           }
           break;

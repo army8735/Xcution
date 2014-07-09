@@ -7,9 +7,6 @@ package me.army8735.xcution.http
   import flash.events.ProgressEvent;
   import flash.events.SecurityErrorEvent;
   import flash.events.ServerSocketConnectEvent;
-  import flash.filesystem.File;
-  import flash.filesystem.FileMode;
-  import flash.filesystem.FileStream;
   import flash.net.ServerSocket;
   import flash.net.Socket;
   import flash.text.TextField;
