@@ -156,6 +156,7 @@ package me.army8735.xcution.http
                 客户端.writeBytes(数据);
                 客户端.flush();
                 客户端.close();
+                客户端 = null;
                 if(套接字 && 套接字.connected) {
                   套接字.close();
                 }
@@ -171,6 +172,7 @@ package me.army8735.xcution.http
               客户端.writeBytes(数据);
               客户端.flush();
               客户端.close();
+              客户端 = null;
               if(套接字 && 套接字.connected) {
                 套接字.close();
               }
