@@ -18,9 +18,13 @@ package me.army8735.xcution.http
     private var 体:HttpBody;
     
     private var 接收数据:ByteArray;
+    private var 累计:int;
     private var 状态:int;
     private static const 开始:int = 0;
     private static const 完成头:int = 1;
+    private static const 结束:int = 2;
+    
+    private static const 错误码:String = "HTTP/1.1 404 Not found\r\n";
     
     public function HttpRequest(原始内容:String, 行:HttpLine, 头:HttpHead, 体:HttpBody)
     {
@@ -29,12 +33,28 @@ package me.army8735.xcution.http
       this.体 = 体;
     }
     public function 链接():void {
+      累计 = 0;
+      接收数据 = new ByteArray();
+      状态 = 开始;
+      
       套接字 = new Socket();
       套接字.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
         trace(event);
+        if(累计 == 0) {
+          接收数据.writeUTFBytes(错误码);
+          接收数据.writeUTFBytes("\r\n\r\n");
+        }
+        接收数据.writeUTFBytes(event.text);
+        dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
       });
       套接字.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
         trace(event);
+        if(累计 == 0) {
+          接收数据.writeUTFBytes(错误码);
+          接收数据.writeUTFBytes("\r\n\r\n");
+        }
+        接收数据.writeUTFBytes(event.text);
+        dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
       });
       套接字.addEventListener(Event.CONNECT, function(event:Event):void {
         trace(event);
@@ -45,10 +65,6 @@ package me.army8735.xcution.http
       });
       套接字.addEventListener(ProgressEvent.SOCKET_DATA, function(event:ProgressEvent):void {
         trace(event);
-        if(接收数据 === null) {
-          接收数据 = new ByteArray();
-          状态 = 开始;
-        }
         if(套接字.bytesAvailable > 0) {
           套接字.readBytes(接收数据);
           分析数据();
@@ -74,6 +90,7 @@ package me.army8735.xcution.http
               && 接收数据[索引+2] == 13
               && 接收数据[索引+3] == 10) {
               接收数据.readBytes(数据, 0, 索引+4);
+              累计 += 索引+4;
               状态 = 完成头;
               dispatchEvent(new HttpEvent(HttpEvent.流, 数据));
               if(接收数据.bytesAvailable > 0) {
@@ -86,6 +103,7 @@ package me.army8735.xcution.http
         case 完成头:
           if(接收数据.bytesAvailable > 0) {
             接收数据.readBytes(数据);
+            累计 += 接收数据.bytesAvailable;
             dispatchEvent(new HttpEvent(HttpEvent.流, 数据));
           }
           break;
