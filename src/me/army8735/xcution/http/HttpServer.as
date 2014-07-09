@@ -82,14 +82,19 @@ package me.army8735.xcution.http
       this.按钮们引用 = 按钮们引用;
     }
     private function 新链接侦听(event:ServerSocketConnectEvent):void {
-      trace(event);
       var 套接字:Socket = event.socket;
+      trace("监听本地连接：", 套接字.remoteAddress + ":" + 套接字.remotePort);
       套接字.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
         if(套接字.connected) {
           套接字.close();
         }
       });
       套接字.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
+        if(套接字.connected) {
+          套接字.close();
+        }
+      });
+      套接字.addEventListener(Event.CLOSE, function(event:Event):void {
         if(套接字.connected) {
           套接字.close();
         }
@@ -125,19 +130,43 @@ package me.army8735.xcution.http
     private function 远程连接(套接字:Socket, 内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody):void {
       var 请求:HttpRequest = new HttpRequest(内容, 行, 头, 体);
       请求.addEventListener(HttpEvent.流, function(event:HttpEvent):void {
-        if(套接字.connected) {
+        if(套接字 && 套接字.connected) {
           套接字.writeBytes(event.数据);
           套接字.flush();
         }
       });
       请求.addEventListener(HttpEvent.关闭, function(event:HttpEvent):void {
-        trace(event);
-        if(套接字.connected) {
+        if(套接字 && 套接字.connected) {
           套接字.writeBytes(event.数据);
           套接字.flush();
           套接字.close();
-          请求 = null;
         }
+        请求 = null;
+        套接字 = null;
+      });
+      套接字.addEventListener(Event.CLOSE, function(event:Event):void {
+        trace("本地连接主动关闭：", 套接字.remoteAddress + ":" + 套接字.remotePort);
+        if(请求) {
+          请求.关闭();
+        }
+        套接字 = null;
+        请求 = null;
+      });
+      套接字.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
+        trace("本地连接异常：", 套接字.remoteAddress + ":" + 套接字.remotePort);
+        if(请求) {
+          请求.关闭();
+        }
+        套接字 = null;
+        请求 = null;
+      });
+      套接字.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
+        trace("本地连接安全异常：", 套接字.remoteAddress + ":" + 套接字.remotePort);
+        if(请求) {
+          请求.关闭();
+        }
+        套接字 = null;
+        请求 = null;
       });
       请求.链接();
     }

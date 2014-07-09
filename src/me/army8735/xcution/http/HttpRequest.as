@@ -5,8 +5,10 @@ package me.army8735.xcution.http
   import flash.events.IOErrorEvent;
   import flash.events.ProgressEvent;
   import flash.events.SecurityErrorEvent;
+  import flash.events.TimerEvent;
   import flash.net.Socket;
   import flash.utils.ByteArray;
+  import flash.utils.Timer;
   
   import me.army8735.xcution.events.HttpEvent;
   
@@ -34,6 +36,12 @@ package me.army8735.xcution.http
       this.头 = 头;
       this.体 = 体;
     }
+    public function 关闭():void {
+      if(套接字 && 套接字.connected) {
+        套接字.close();
+      }
+      套接字 = null;
+    }
     public function 链接():void {
       累计 = 0;
       总长度 = -1;
@@ -43,7 +51,6 @@ package me.army8735.xcution.http
       
       套接字 = new Socket();
       套接字.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
-        trace(event);
         if(累计 == 0) {
           接收数据.writeUTFBytes(错误码);
           接收数据.writeUTFBytes("\r\n\r\n");
@@ -52,7 +59,6 @@ package me.army8735.xcution.http
         dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
       });
       套接字.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
-        trace(event);
         if(累计 == 0) {
           接收数据.writeUTFBytes(错误码);
           接收数据.writeUTFBytes("\r\n\r\n");
@@ -61,47 +67,44 @@ package me.army8735.xcution.http
         dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
       });
       套接字.addEventListener(Event.CONNECT, function(event:Event):void {
-        trace(event);
+        trace("发出远程链接：", 行.主机, 行.端口, 套接字.remoteAddress + ":" + 套接字.remotePort);
         套接字.writeUTFBytes(行.兼容内容);
         套接字.writeUTFBytes(头.内容);
         套接字.writeUTFBytes(体.内容);
         套接字.flush();
       });
       套接字.addEventListener(ProgressEvent.SOCKET_DATA, function(event:ProgressEvent):void {
+        trace("远程链接数据：", 行.主机, 行.端口, 套接字.remoteAddress + ":" + 套接字.remotePort);
         if(套接字.bytesAvailable > 0) {
-          套接字.readBytes(接收数据);
-          分析数据();
+          var 数据:ByteArray = new ByteArray();
+          套接字.readBytes(数据, 0, 套接字.bytesAvailable);
+          分析数据(数据);
         }
       });
       套接字.addEventListener(Event.CLOSE, function(event:Event):void {
-        trace(event);
-        if(套接字.bytesAvailable > 0) {
-          累计 = 接收数据.bytesAvailable;
-          套接字.readBytes(接收数据);
-        }
-        dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
-        if(套接字.connected) {
+        trace("远程链接关闭：", 行.主机, 行.端口);
+        if(套接字 && 套接字.connected) {
           套接字.close();
+          套接字 = null;
         }
-        套接字 = null;
       });
       套接字.connect(行.主机, 行.端口);
     }
-    private function 分析数据():void {
-      var 数据:ByteArray = new ByteArray();
+    private function 分析数据(数据:ByteArray):void {
       var 索引:uint;
       switch(状态) {
         case 开始:
-          for(索引 = 0; 索引 < 接收数据.bytesAvailable; 索引++) {
-            if(接收数据[索引] == 13
-              && 接收数据[索引+1] == 10
-              && 接收数据[索引+2] == 13
-              && 接收数据[索引+3] == 10) {
+          for(索引 = 0; 索引 < 数据.bytesAvailable; 索引++) {
+            if(数据[索引] == 13
+              && 数据[索引+1] == 10
+              && 数据[索引+2] == 13
+              && 数据[索引+3] == 10) {
               状态 = 完成头;
-              接收数据.readBytes(数据, 0, 索引+4);
-              dispatchEvent(new HttpEvent(HttpEvent.流, 数据));
+              var 头数据:ByteArray = new ByteArray();
+              数据.readBytes(头数据, 0, 索引+4);
+              dispatchEvent(new HttpEvent(HttpEvent.流, 头数据));
               
-              var 内容:String = 数据.toString();
+              var 内容:String = 头数据.toString();
               索引 = 内容.indexOf("\r\n");
               var 行:ResponseLine = new ResponseLine(内容.substring(0, 索引));
               if(行.状态码 == 304) {
@@ -118,37 +121,52 @@ package me.army8735.xcution.http
               if(传输编码 == "chunked") {
                 块传输 = true;
               }
-              
-              if(接收数据.bytesAvailable > 0) {
-                分析数据();
+              if(数据.bytesAvailable > 0) {
+                var 剩余数据:ByteArray = new ByteArray();
+                数据.readBytes(剩余数据);
+                分析数据(剩余数据);
               }
               break;
             }
           }
           break;
         case 完成头:
-          if(接收数据.bytesAvailable > 0) {
-            累计 += 接收数据.bytesAvailable;
-            接收数据.readBytes(数据);
-            dispatchEvent(new HttpEvent(HttpEvent.流, 数据));
-            
+          if(数据.bytesAvailable > 0) {
+            累计 += 数据.bytesAvailable;
             if(块传输) {
-              for(索引 = 接收数据.length - 1; 索引 >= 0 && 索引 >= 接收数据.length - 5; 索引--) {
-                if(接收数据[索引] == 10
-                  && 接收数据[索引-1] == 13
-                  && 接收数据[索引-2] == 10
-                  && 接收数据[索引-3] == 13
-                  && 接收数据[索引-4] == 48) {
-                  套接字.dispatchEvent(new Event(Event.CLOSE));
+              索引 = 数据.length - 1;
+              if(数据[索引] == 10
+                && 数据[索引-1] == 13
+                && 数据[索引-2] == 10
+                && 数据[索引-3] == 13
+                && 数据[索引-4] == 48) {
+                trace("到达块结束主动关闭：", 套接字.remoteAddress + ":" + 套接字.remotePort, 累计, 总长度);
+                延迟发送关闭(数据);
+                if(套接字 && 套接字.connected) {
+                  套接字.close();
                 }
+                套接字 = null;
               }
             }
             else if(总长度 > -1 && 累计 == 总长度) {
-              套接字.dispatchEvent(new Event(Event.CLOSE));
+              trace("到达总长度主动关闭：", 套接字.remoteAddress + ":" + 套接字.remotePort, 累计, 总长度);
+              延迟发送关闭(数据);
+              if(套接字 && 套接字.connected) {
+                套接字.close();
+              }
+              套接字 = null;
             }
           }
           break;
       }
+    }
+    private function 延迟发送关闭(数据:ByteArray):void {
+      var 计时器:Timer = new Timer(20, 1);
+      计时器.addEventListener(TimerEvent.TIMER_COMPLETE, function(event:TimerEvent):void {
+        dispatchEvent(new HttpEvent(HttpEvent.关闭, 数据));
+        计时器 = null;
+      });
+      计时器.start();
     }
   }
 }
