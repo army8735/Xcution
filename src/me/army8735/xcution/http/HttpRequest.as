@@ -140,7 +140,7 @@ package me.army8735.xcution.http
                 && 数据[索引-2] == 10
                 && 数据[索引-3] == 13
                 && 数据[索引-4] == 48) {
-                trace("到达块结束主动关闭：", 套接字.remoteAddress + ":" + 套接字.remotePort, 累计, 总长度);
+                trace("块结束主动关闭：", 套接字.remoteAddress + ":" + 套接字.remotePort, 累计, 总长度);
                 延迟发送关闭(数据);
                 if(套接字 && 套接字.connected) {
                   套接字.close();
@@ -149,12 +149,15 @@ package me.army8735.xcution.http
               }
             }
             else if(总长度 > -1 && 累计 == 总长度) {
-              trace("到达总长度主动关闭：", 套接字.remoteAddress + ":" + 套接字.remotePort, 累计, 总长度);
+              trace("总长度主动关闭：", 套接字.remoteAddress + ":" + 套接字.remotePort, 累计, 总长度);
               延迟发送关闭(数据);
               if(套接字 && 套接字.connected) {
                 套接字.close();
               }
               套接字 = null;
+            }
+            else {
+              dispatchEvent(new HttpEvent(HttpEvent.流, 数据));
             }
           }
           break;
