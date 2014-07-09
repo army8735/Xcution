@@ -31,7 +31,7 @@ package me.army8735.xcution.http
       if(键值对.hasOwnProperty(键)) {
         return 键值对[键];
       }
-      return "";
+      return null;
     }
     public function get 内容():String {
       return 字符串 + "\r\n\r\n";

@@ -1,11 +1,11 @@
 package me.army8735.xcution.http
 {
-  import com.adobe.net.URI;
-  
   import flash.desktop.NativeApplication;
   import flash.display.Sprite;
   import flash.events.Event;
+  import flash.events.IOErrorEvent;
   import flash.events.ProgressEvent;
+  import flash.events.SecurityErrorEvent;
   import flash.events.ServerSocketConnectEvent;
   import flash.filesystem.File;
   import flash.filesystem.FileMode;
@@ -87,10 +87,19 @@ package me.army8735.xcution.http
     private function 新链接侦听(event:ServerSocketConnectEvent):void {
       trace(event);
       var 套接字:Socket = event.socket;
+      套接字.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
+        if(套接字.connected) {
+          套接字.close();
+        }
+      });
+      套接字.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
+        if(套接字.connected) {
+          套接字.close();
+        }
+      });
       套接字.addEventListener(ProgressEvent.SOCKET_DATA, 数据侦听);
     }
     private function 数据侦听(event:ProgressEvent):void {
-      trace(event);
       var 套接字:Socket = event.target as Socket;
       var 缓冲:ByteArray = new ByteArray();
       套接字.readBytes(缓冲, 0, 套接字.bytesAvailable);
@@ -100,7 +109,7 @@ package me.army8735.xcution.http
         if(套接字 != null && 套接字.connected)
         {
           var 索引:int = 内容.indexOf("\r\n");
-          var 行:HttpLine = new HttpLine(内容.substring(0, 索引));
+          var 行:RequestLine = new RequestLine(内容.substring(0, 索引));
           var 头体:Array = 内容.substr(索引 + 2).split("\r\n\r\n");
           var 头:HttpHead = new HttpHead(头体[0]);
           var 体:HttpBody = new HttpBody(头体[1]);
@@ -116,10 +125,9 @@ package me.army8735.xcution.http
         trace(error.message);
       }
     }
-    private function 远程连接(套接字:Socket, 内容:String, 行:HttpLine, 头:HttpHead, 体:HttpBody):void {
+    private function 远程连接(套接字:Socket, 内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody):void {
       var 请求:HttpRequest = new HttpRequest(内容, 行, 头, 体);
       请求.addEventListener(HttpEvent.流, function(event:HttpEvent):void {
-        trace(event);
         if(套接字.connected) {
           套接字.writeBytes(event.数据);
           套接字.flush();

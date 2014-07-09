@@ -1,6 +1,6 @@
 package me.army8735.xcution.http
 {
-  public class HttpLine
+  public class RequestLine
   {
     private var 字符串:String;
     private var 方法名:String;
@@ -11,7 +11,7 @@ package me.army8735.xcution.http
     private var 版本名:String;
     private var 端口号:int;
     
-    public function HttpLine(字符串:String)
+    public function RequestLine(字符串:String)
     {
       this.字符串 = 字符串;
       解析(字符串);

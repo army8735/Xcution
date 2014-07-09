@@ -13,12 +13,14 @@ package me.army8735.xcution.http
   public class HttpRequest extends EventDispatcher
   {
     private var 套接字:Socket;
-    private var 行:HttpLine;
+    private var 行:RequestLine;
     private var 头:HttpHead;
     private var 体:HttpBody;
     
     private var 接收数据:ByteArray;
     private var 累计:int;
+    private var 总长度:int;
+    private var 块传输:Boolean;
     private var 状态:int;
     private static const 开始:int = 0;
     private static const 完成头:int = 1;
@@ -26,7 +28,7 @@ package me.army8735.xcution.http
     
     private static const 错误码:String = "HTTP/1.1 404 Not found\r\n";
     
-    public function HttpRequest(原始内容:String, 行:HttpLine, 头:HttpHead, 体:HttpBody)
+    public function HttpRequest(原始内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody)
     {
       this.行 = 行;
       this.头 = 头;
@@ -34,6 +36,8 @@ package me.army8735.xcution.http
     }
     public function 链接():void {
       累计 = 0;
+      总长度 = -1;
+      块传输 = false;
       接收数据 = new ByteArray();
       状态 = 开始;
       
@@ -64,7 +68,6 @@ package me.army8735.xcution.http
         套接字.flush();
       });
       套接字.addEventListener(ProgressEvent.SOCKET_DATA, function(event:ProgressEvent):void {
-        trace(event);
         if(套接字.bytesAvailable > 0) {
           套接字.readBytes(接收数据);
           分析数据();
@@ -76,6 +79,9 @@ package me.army8735.xcution.http
           套接字.readBytes(接收数据);
         }
         dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
+        if(套接字.connected) {
+          套接字.close();
+        }
         套接字 = null;
       });
       套接字.connect(行.主机, 行.端口);
@@ -93,6 +99,27 @@ package me.army8735.xcution.http
               累计 += 索引+4;
               状态 = 完成头;
               dispatchEvent(new HttpEvent(HttpEvent.流, 数据));
+              
+              var 内容:String = 数据.toString();
+              索引 = 内容.indexOf("\r\n");
+              var 行:ResponseLine = new ResponseLine(内容.substring(0, 索引));
+              if(行.状态码 == 304) {
+                套接字.dispatchEvent(new Event(Event.CLOSE));
+                return;
+              }
+              var 头体:Array = 内容.substr(索引 + 4).split("\r\n\r\n");
+              var 头:HttpHead = new HttpHead(头体[0]);
+              var 长度:String = 头.获取("Content-Length");
+              if(长度 !== null) {
+                总长度 = parseInt(长度);
+              }
+              else {
+                var 传输编码:String = 头.获取("Transfer-Encoding");
+                if(传输编码 !== null) {
+                  块传输 = true;
+                }
+              }
+              
               if(接收数据.bytesAvailable > 0) {
                 分析数据();
               }
