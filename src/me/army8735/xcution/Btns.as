@@ -6,6 +6,7 @@ package me.army8735.xcution
 	
 	import me.army8735.xcution.http.HttpServer;
 	import me.army8735.xcution.proxy.Proxy;
+	import me.army8735.xcution.events.EventBus;
 	
 	public class Btns extends Sprite
 	{

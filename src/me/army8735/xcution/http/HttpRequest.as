@@ -8,11 +8,13 @@ package me.army8735.xcution.http
   import flash.net.Socket;
   import flash.utils.ByteArray;
   
+  import me.army8735.xcution.MsgField;
   import me.army8735.xcution.events.HttpEvent;
   
   public class HttpRequest extends EventDispatcher
   {
     private var 客户端:Socket;
+    private var 控制台:MsgField;
     
     private var 套接字:Socket;
     private var 行:RequestLine;
@@ -30,9 +32,10 @@ package me.army8735.xcution.http
     
     private static const 错误码:String = "HTTP/1.1 404 Not found\r\n";
     
-    public function HttpRequest(客户端:Socket, 行:RequestLine, 头:HttpHead, 体:HttpBody)
+    public function HttpRequest(客户端:Socket, 行:RequestLine, 头:HttpHead, 体:HttpBody, 控制台:MsgField)
     {
       this.客户端 = 客户端;
+      this.控制台 = 控制台;
       this.行 = 行;
       this.头 = 头;
       this.体 = 体;

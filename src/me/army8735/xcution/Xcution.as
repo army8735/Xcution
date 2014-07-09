@@ -1,5 +1,6 @@
 package me.army8735.xcution
 {
+  import flash.desktop.NativeApplication;
   import flash.display.NativeMenu;
   import flash.display.NativeMenuItem;
   import flash.display.Sprite;
@@ -8,7 +9,6 @@ package me.army8735.xcution
   import flash.events.Event;
   import flash.net.URLRequest;
   import flash.net.navigateToURL;
-  import flash.desktop.NativeApplication;
   
   import me.army8735.xcution.http.HttpServer;
   import me.army8735.xcution.system.NetIP;
@@ -97,9 +97,7 @@ package me.army8735.xcution
       地址列表.forEach(function(地址:String, 索引:int, 地址列表:Vector.<String>):void {
         if(/\d+\.\d+\.\d+\.\d+/.test(地址)) {
           var 项:NativeMenuItem = new NativeMenuItem(地址);
-          if(地址 == 首选地址) {
-            项.checked = true;
-          }
+          项.checked = false;
           项.addEventListener(Event.SELECT, function(event:Event):void {
             if(!项.checked) {
               上次选择.checked = false;
@@ -108,7 +106,13 @@ package me.army8735.xcution
               上次选择 = 项;
             }
           });
-          列表.addItem(项);
+          if(地址 == 首选地址) {
+            项.checked = true;
+            列表.addItemAt(项, 0);
+          }
+          else {
+           列表.addItem(项);
+          }
         }
       });
     }

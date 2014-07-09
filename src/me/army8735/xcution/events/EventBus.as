@@ -1,4 +1,4 @@
-package me.army8735.xcution
+package me.army8735.xcution.events
 {
   import flash.events.Event;
   import flash.events.EventDispatcher;

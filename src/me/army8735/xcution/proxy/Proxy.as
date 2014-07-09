@@ -11,7 +11,7 @@ package me.army8735.xcution.proxy
   import flash.filesystem.FileStream;
   import flash.system.Capabilities;
   
-  import me.army8735.xcution.EventBus;
+  import me.army8735.xcution.events.EventBus;
   import me.army8735.xcution.MsgField;
   
   public class Proxy
