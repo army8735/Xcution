@@ -43,7 +43,7 @@ package me.army8735.xcution
       控制台 = new MsgField();
       addChild(控制台);
       
-      服务器 = new HttpServer(控制台, 首选地址);
+      服务器 = new HttpServer(规则面板, 控制台, 首选地址);
       addChild(服务器);
       
       初始化菜单(地址列表, 首选地址, 服务器);

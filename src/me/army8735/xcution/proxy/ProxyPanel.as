@@ -54,5 +54,14 @@ package me.army8735.xcution.proxy
       内容.removeChild(规则);
       排序();
     }
+    public function 获取映射(路径:String):String {
+      for(var i:int = 0; i < 内容.numChildren; i++) {
+        var 规则:ProxyRule = 内容.getChildAt(i) as ProxyRule;
+        if(规则.命中(路径)) {
+          return 规则.映射(路径);
+        }
+      }
+      return null;
+    }
   }
 }

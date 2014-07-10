@@ -258,7 +258,7 @@ package me.army8735.xcution.proxy
     public function get 映射路径():String {
       return 映射文本.text.replace(/^\s+/, "").replace(/\s+$/, "");
     }
-    private function 选择文件侦听(event:MouseEvent):void {trace(1)
+    private function 选择文件侦听(event:MouseEvent):void {
       var 文件:File = new File();
       var 过滤:Array = new Array();
       switch(代理类型) {
@@ -278,8 +278,30 @@ package me.army8735.xcution.proxy
           return;
       }
       文件.addEventListener(Event.SELECT, function(event:Event):void {
-        映射文本.text = 文件.url.replace(/^file:\/\//, "");
+        映射文本.text = 文件.nativePath;
       });
+    }
+    public function 命中(路径:String):Boolean {
+      switch(代理类型) {
+        case 单个文件:
+          return 路径 == 拦截路径;
+        case 文件路径:
+          return 路径.indexOf(拦截路径) == 0;
+        case 正则匹配:
+          return new RegExp(拦截路径).test(路径);
+      }
+      return false;
+    }
+    public function 映射(路径:String):String {
+      switch(代理类型) {
+        case 单个文件:
+          return 映射路径;
+        case 文件路径:
+          return 映射路径 + 路径.slice(拦截路径.length);
+        case 正则匹配:
+          return 路径.replace(new RegExp(拦截路径), 映射路径);
+      }
+      throw new Error("未知错误，命中却无映射");
     }
   }
 }

@@ -5,15 +5,20 @@ package me.army8735.xcution.http
   import flash.events.IOErrorEvent;
   import flash.events.ProgressEvent;
   import flash.events.SecurityErrorEvent;
+  import flash.filesystem.File;
+  import flash.filesystem.FileMode;
+  import flash.filesystem.FileStream;
   import flash.net.Socket;
   import flash.utils.ByteArray;
   
   import me.army8735.xcution.MsgField;
+  import me.army8735.xcution.proxy.ProxyPanel;
   
   public class HttpRequest extends EventDispatcher
   {
     private var 客户端:Socket;
     private var 控制台:MsgField;
+    private var 规则面板:ProxyPanel;
     
     private var 套接字:Socket;
     private var 行:RequestLine;
@@ -28,12 +33,14 @@ package me.army8735.xcution.http
     private static const 完成头:int = 1;
     private static const 结束:int = 2;
     
+    private static const 正确码:String = "HTTP/1.1 200 OK\r\n";
     private static const 错误码:String = "HTTP/1.1 404 Not found\r\n";
     
-    public function HttpRequest(客户端:Socket, 行:RequestLine, 头:HttpHead, 体:HttpBody, 控制台:MsgField)
+    public function HttpRequest(客户端:Socket, 行:RequestLine, 头:HttpHead, 体:HttpBody, 控制台:MsgField, 规则面板:ProxyPanel)
     {
       this.客户端 = 客户端;
       this.控制台 = 控制台;
+      this.规则面板 = 规则面板;
       this.行 = 行;
       this.头 = 头;
       this.体 = 体;
@@ -45,6 +52,11 @@ package me.army8735.xcution.http
       套接字 = null;
     }
     public function 链接():void {
+      var 映射:String = 规则面板.获取映射(行.地址);
+      if(映射) {
+        写入本地内容(映射);
+        return;
+      }
       累计 = 0;
       总长度 = -1;
       块传输 = false;
@@ -52,6 +64,7 @@ package me.army8735.xcution.http
       
       套接字 = new Socket();
       套接字.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
+        trace(event.text);
         var 数据:ByteArray = new ByteArray();
         if(累计 == 0) {
           数据.writeUTFBytes(错误码);
@@ -73,6 +86,7 @@ package me.army8735.xcution.http
         }
       });
       套接字.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
+        trace(event.text);
         var 数据:ByteArray = new ByteArray();
         if(累计 == 0) {
           数据.writeUTFBytes(错误码);
@@ -194,7 +208,7 @@ package me.army8735.xcution.http
                 客户端.flush();
               }
             }
-            else if(总长度 > -1 && 累计 == 总长度) {
+            else if(总长度 > -1 && 累计 >= 总长度) {
               trace("总长度主动关闭：", 累计, 总长度, this.行.地址);
               客户端.writeBytes(数据);
               客户端.flush();
@@ -212,6 +226,72 @@ package me.army8735.xcution.http
           }
           break;
       }
+    }
+    private function 写入本地内容(映射:String):void {
+      var 文件:File = new File(映射);
+      if(!文件.exists) {
+        本地文件不存在(映射);
+      }
+      var 文件流:FileStream = new FileStream();
+      文件流.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
+        本地文件不存在(映射, event.text);
+      });
+      文件流.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
+        本地文件不存在(映射, event.text);
+      });
+      文件流.open(文件, FileMode.READ);
+      var 数据:ByteArray = new ByteArray();
+      文件流.readBytes(数据);
+      客户端.writeUTFBytes(正确码);
+      客户端.writeUTFBytes("Cache-Control: no-cache\r\n");
+      客户端.writeUTFBytes("Content-Type: ");
+      var 扩展名:String = /\.(\w+)$/.test(映射) ? (/\.(\w+)$/.exec(映射)[1]) : "";
+      switch(扩展名) {
+        case "js":
+          客户端.writeUTFBytes("application/javascript; charset=utf-8");
+          break;
+        case "css":
+          客户端.writeUTFBytes("text/css; charset=utf-8");
+          break;
+        case "html":
+          客户端.writeUTFBytes("text/html; charset=utf-8");
+          break;
+        case "tpl":
+        case "txt":
+        case "vm":
+          客户端.writeUTFBytes("text/plain; charset=utf-8");
+          break;
+        case "jpg":
+        case "jpeg":
+          客户端.writeUTFBytes("image/jpeg");
+          break;
+        case "gif":
+          客户端.writeUTFBytes("image/gif");
+          break;
+        case "png":
+          客户端.writeUTFBytes("image/png");
+          break;
+        default:
+          客户端.writeUTFBytes("application/octet-stream");
+      }
+      客户端.writeUTFBytes("\r\n\r\n\r\n");
+      客户端.writeBytes(数据);
+      客户端.flush();
+      客户端.close();
+      客户端 = null;
+    }
+    private function 本地文件不存在(映射:String, 消息:String = null):void {
+      客户端.writeUTFBytes(错误码);
+      客户端.writeUTFBytes("Content-Type: text/plain; charset=utf-8\r\n");
+      客户端.writeUTFBytes("Cache-Control: no-cache\r\n");
+      客户端.writeUTFBytes("\r\n\r\n");
+      客户端.writeUTFBytes(映射);
+      if(消息) {
+        客户端.writeUTFBytes(消息);
+      }
+      客户端.flush();
+      客户端.close();
+      客户端 = null;
     }
   }
 }

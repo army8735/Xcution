@@ -13,10 +13,11 @@ package me.army8735.xcution.http
   import flash.text.TextFormat;
   import flash.utils.ByteArray;
   
-  import me.army8735.xcution.btns.Btns;
   import me.army8735.xcution.MsgField;
+  import me.army8735.xcution.btns.Btns;
   import me.army8735.xcution.events.CustomEvent;
   import me.army8735.xcution.events.EventBus;
+  import me.army8735.xcution.proxy.ProxyPanel;
 
   public class HttpServer extends Sprite
   {
@@ -24,11 +25,13 @@ package me.army8735.xcution.http
     private var 地址:String;
     private var 端口号:int;
     private var 消息框:TextField;
+    private var 规则面板:ProxyPanel;
     private var 控制台:MsgField;
     private var 按钮们引用:Btns;
     
-    public function HttpServer(控制台:MsgField, 地址:String)
+    public function HttpServer(规则面板:ProxyPanel, 控制台:MsgField, 地址:String)
     {
+      this.规则面板 = 规则面板;
       this.控制台 = 控制台;
       
       消息框 = new TextField();
@@ -114,11 +117,13 @@ package me.army8735.xcution.http
       var 套接字:Socket = event.socket;
       trace("监听本地连接：", 套接字.remoteAddress + ":" + 套接字.remotePort);
       套接字.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
+        trace(event.text);
         if(套接字.connected) {
           套接字.close();
         }
       });
       套接字.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
+        trace(event.text);
         if(套接字.connected) {
           套接字.close();
         }
@@ -157,11 +162,14 @@ package me.army8735.xcution.http
       }
     }
     private function 远程连接(套接字:Socket, 内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody):void {
-      var 请求:HttpRequest = new HttpRequest(套接字, 行, 头, 体, 控制台);
+      var 请求:HttpRequest = new HttpRequest(套接字, 行, 头, 体, 控制台, 规则面板);
       套接字.addEventListener(Event.CLOSE, function(event:Event):void {
         trace("本地连接主动关闭：", 行.地址);
         if(请求) {
           请求.关闭();
+        }
+        if(套接字 && 套接字.connected) {
+          套接字.close()
         }
         套接字 = null;
         请求 = null;
@@ -170,6 +178,9 @@ package me.army8735.xcution.http
         trace("本地连接异常：", 套接字.remoteAddress + ":" + 套接字.remotePort);
         if(请求) {
           请求.关闭();
+        }
+        if(套接字 && 套接字.connected) {
+          套接字.close()
         }
         套接字 = null;
         请求 = null;
