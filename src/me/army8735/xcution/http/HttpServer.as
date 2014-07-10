@@ -15,8 +15,8 @@ package me.army8735.xcution.http
   
   import me.army8735.xcution.Btns;
   import me.army8735.xcution.MsgField;
-  import me.army8735.xcution.events.HttpEvent;
-  import me.army8735.xcution.proxy.Proxy;
+  import me.army8735.xcution.events.CustomEvent;
+  import me.army8735.xcution.events.EventBus;
 
   public class HttpServer extends Sprite
   {
@@ -35,48 +35,74 @@ package me.army8735.xcution.http
       var 样式:TextFormat = new TextFormat();
       样式.font = "宋体";
       消息框.defaultTextFormat = 样式;
+      消息框.text = '---';
       addChild(消息框);
       
-      切换地址(地址, true);
+      NativeApplication.nativeApplication.addEventListener(Event.EXITING, function(event:Event):void {
+        trace(event);
+        if(服务器) {
+          if(服务器.bound) {
+            服务器.close();
+          }
+          服务器.removeEventListener(ServerSocketConnectEvent.CONNECT, 新链接侦听);
+        }
+        服务器 = null;
+      });
     }
     public function get 服务地址():String {
       return 地址 + ":" + 端口号;
     }
     public function 重置():void {
-      x = stage.stageWidth - 消息框.width - 5;
-      y = 5;
-    }
-    public function 切换地址(地址:String, 首次:Boolean = false):void {
-      if(服务器.bound) {
-        服务器.close();
-        控制台.追加高亮("已关闭随机端口：" + 服务地址);
-        服务器 = new ServerSocket();
-      }
-      服务器.bind(8735, 地址);
-      this.地址 = 服务器.localAddress;
-      端口号 = 服务器.localPort;
-      控制台.追加警告("已开启随机端口：" + 地址 + ":" + 端口号);
-      
-      消息框.text = 地址 + ":" + 端口号;
       消息框.width = 消息框.textWidth + 4;
       消息框.height = 消息框.textHeight + 4;
-      if(!首次) {
-        重置();
-        var 状态:Boolean = 按钮们引用.运行按钮.状态();
-        if(状态) {
-          Proxy.设置(服务地址, 控制台);
-        }
+      x = stage.stageWidth - 消息框.width - 5;
+      y = stage.stageHeight - 消息框.height - 15;
+    }
+    public function 开启(地址:String):void {
+      关闭();
+      服务器 = new ServerSocket();
+      切换地址(地址);
+    }
+    public function 切换地址(地址:String, 首次:Boolean = false):void {
+      try {
+        服务器.bind(8735, 地址);
+      } catch(error:Error) {
+        trace(error.getStackTrace());
+        控制台.追加错误(error.message);
+        关闭();
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.启动错误));
+        return;
       }
+      this.地址 = 服务器.localAddress;
+      端口号 = 服务器.localPort;
+      
+      消息框.text = 地址 + ":" + 端口号;
+      重置();
       
       服务器.addEventListener(ServerSocketConnectEvent.CONNECT, 新链接侦听);
-      服务器.listen();
+      try {
+        服务器.listen();
+      } catch(error:Error) {
+        trace(error.getStackTrace());
+        控制台.追加错误(error.message);
+        关闭();
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.启动错误));
+        return;
+      }
       
-      NativeApplication.nativeApplication.addEventListener(Event.EXITING, function(event:Event):void {
-        trace(event);
+      控制台.追加警告("已开启端口：" + 地址 + ":" + 端口号);
+    }
+    public function 关闭():void {
+      if(服务器) {
         if(服务器.bound) {
           服务器.close();
+          控制台.追加高亮("已关闭端口：" + 服务地址);
         }
-      });
+        服务器.removeEventListener(ServerSocketConnectEvent.CONNECT, 新链接侦听);
+      }
+      服务器 = null;
+      消息框.text = "---";
+      重置();
     }
     public function set 按钮们(按钮们引用:Btns):void {
       this.按钮们引用 = 按钮们引用;

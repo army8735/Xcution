@@ -12,7 +12,7 @@ package me.army8735.xcution
     private var 文字3:String;
     private var 文字4:String;
     
-    public function CustomButton(文字1:String = "开启", 文字2:String = "停止")
+    public function CustomButton(文字1:String, 文字2:String)
     {
       super();
       状态标识 = false;
@@ -26,7 +26,7 @@ package me.army8735.xcution
       
       label = 文字1;
     }
-    public function alt():Boolean {
+    public function 切换():Boolean {
       状态标识 = !状态标识;
       if(状态标识)
       {
@@ -35,9 +35,9 @@ package me.army8735.xcution
       else {
         label = 文字1;
       }
-      return 状态();
+      return 状态;
     }
-    public function 状态():Boolean {
+    public function get 状态():Boolean {
       return 状态标识;
     }
   }

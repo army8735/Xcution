@@ -1,4 +1,4 @@
-package me.army8735.xcution.proxy
+package me.army8735.xcution.system
 {
   import flash.desktop.NativeApplication;
   import flash.desktop.NativeProcess;
@@ -12,6 +12,7 @@ package me.army8735.xcution.proxy
   import flash.system.Capabilities;
   
   import me.army8735.xcution.events.EventBus;
+  import me.army8735.xcution.events.CustomEvent;
   import me.army8735.xcution.MsgField;
   
   public class Proxy
@@ -86,6 +87,10 @@ package me.army8735.xcution.proxy
         }
         本地进程.start(进程信息);
       }
+      else {
+        控制台.追加警告("Mac系统暂不支持自动切换");
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.刷新));
+      }
     }
     public static function 取消(控制台:MsgField):void {
       if(/windows/i.test(Capabilities.os))
@@ -139,6 +144,10 @@ package me.army8735.xcution.proxy
         });
         本地进程.start(进程信息);
       }
+      else {
+        控制台.追加警告("Mac系统暂不支持自动切换");
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.刷新));
+      }
     }
     public static function 刷新(控制台:MsgField):void {
       if(/windows/i.test(Capabilities.os))
@@ -158,12 +167,12 @@ package me.army8735.xcution.proxy
         本地进程.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, function(event:ProgressEvent):void {
           var s:String = 本地进程.standardOutput.readMultiByte(本地进程.standardOutput.bytesAvailable, 编码);
           控制台.追加(s);
-          EventBus.dispatchEvent(new Event(EventBus.刷新));
+          EventBus.dispatchEvent(new CustomEvent(CustomEvent.刷新));
         });
         本地进程.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, function(event:ProgressEvent):void {
           var s:String = 本地进程.standardError.readMultiByte(本地进程.standardError.bytesAvailable, 编码);
           控制台.追加错误(s);
-          EventBus.dispatchEvent(new Event(EventBus.刷新));
+          EventBus.dispatchEvent(new CustomEvent(CustomEvent.刷新));
         });
         本地进程.start(进程信息);
       }

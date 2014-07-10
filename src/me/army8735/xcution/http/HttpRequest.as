@@ -71,6 +71,7 @@ package me.army8735.xcution.http
         dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
       });
       套接字.addEventListener(Event.CONNECT, function(event:Event):void {
+        控制台.追加("代理： " + 行.地址);
         trace("发出远程链接：", 行.地址);
         套接字.writeUTFBytes(行.兼容内容);
         套接字.writeUTFBytes(头.内容);

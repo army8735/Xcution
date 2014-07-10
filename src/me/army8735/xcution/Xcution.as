@@ -10,6 +10,8 @@ package me.army8735.xcution
   import flash.net.URLRequest;
   import flash.net.navigateToURL;
   
+  import me.army8735.xcution.events.CustomEvent;
+  import me.army8735.xcution.events.EventBus;
   import me.army8735.xcution.http.HttpServer;
   import me.army8735.xcution.system.NetIP;
   
@@ -39,7 +41,7 @@ package me.army8735.xcution
       
       初始化菜单(地址列表, 首选地址, 服务器);
       
-      按钮们 = new Btns(控制台, 服务器);
+      按钮们 = new Btns(控制台, 服务器, 首选地址);
       addChild(按钮们);
       
       stage.addEventListener(Event.RESIZE, 重置);
@@ -65,13 +67,13 @@ package me.army8735.xcution
       
       var 选择:NativeMenu = new NativeMenu();
       var 列表:NativeMenu = new NativeMenu();
-      添加列表(列表, 地址列表, 首选地址, 服务器);
+      添加列表(列表, 地址列表, 首选地址);
       上次选择 = 列表.getItemAt(0);
       上次选择.checked = true;
       选择.addSubmenu(列表, "列表");
       var 刷新:NativeMenuItem = new NativeMenuItem("刷新");
       刷新.addEventListener(Event.SELECT, function(event:Event):void {
-        添加列表(列表, NetIP.获取列表(), 上次选择.label, 服务器);
+        添加列表(列表, NetIP.获取列表(), 上次选择.label);
       });
       选择.addItem(刷新);
       
@@ -92,7 +94,7 @@ package me.army8735.xcution
       stage.nativeWindow.menu = 菜单;
       NativeApplication.nativeApplication.menu = 菜单;
     }
-    private function 添加列表(列表:NativeMenu, 地址列表:Vector.<String>, 首选地址:String, 服务器:HttpServer):void {
+    private function 添加列表(列表:NativeMenu, 地址列表:Vector.<String>, 首选地址:String):void {
       列表.removeAllItems();
       地址列表.forEach(function(地址:String, 索引:int, 地址列表:Vector.<String>):void {
         if(/\d+\.\d+\.\d+\.\d+/.test(地址)) {
@@ -102,8 +104,8 @@ package me.army8735.xcution
             if(!项.checked) {
               上次选择.checked = false;
               项.checked = true;
-              服务器.切换地址(项.label);
               上次选择 = 项;
+              EventBus.dispatchEvent(new CustomEvent(CustomEvent.切换地址));
             }
           });
           if(地址 == 首选地址) {
