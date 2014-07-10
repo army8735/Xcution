@@ -1,4 +1,4 @@
-package me.army8735.xcution
+package me.army8735.xcution.btns
 {
   import flash.text.TextFormat;
   
@@ -9,8 +9,6 @@ package me.army8735.xcution
     private var 状态标识:Boolean;
     private var 文字1:String;
     private var 文字2:String;
-    private var 文字3:String;
-    private var 文字4:String;
     
     public function CustomButton(文字1:String, 文字2:String)
     {

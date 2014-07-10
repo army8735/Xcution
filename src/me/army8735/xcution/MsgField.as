@@ -18,6 +18,8 @@ package me.army8735.xcution
 		public function MsgField()
 		{
 			文本框 = new TextField();
+      文本框.background = true;
+      文本框.backgroundColor = 0xF0F0F0;
 			文本框.multiline = true;
 			默认样式 = new TextFormat();
 			默认样式.font = "宋体";

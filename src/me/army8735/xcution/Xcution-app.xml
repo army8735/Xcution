@@ -79,7 +79,7 @@
 		<!-- <x></x> -->
 
 		<!-- The window's initial y position. Optional. -->
-		<!-- <y></y> -->
+		<y>100</y>
 
 		<!-- The window's minimum size, specified as a width/height pair in pixels, such as "400 200". Optional. -->
 		<minSize>400 300</minSize>

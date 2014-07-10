@@ -13,7 +13,7 @@ package me.army8735.xcution.http
   import flash.text.TextFormat;
   import flash.utils.ByteArray;
   
-  import me.army8735.xcution.Btns;
+  import me.army8735.xcution.btns.Btns;
   import me.army8735.xcution.MsgField;
   import me.army8735.xcution.events.CustomEvent;
   import me.army8735.xcution.events.EventBus;

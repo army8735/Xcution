@@ -1,10 +1,11 @@
-package me.army8735.xcution
+package me.army8735.xcution.btns
 {
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;
 	
+	import me.army8735.xcution.MsgField;
+	import me.army8735.xcution.events.CustomEvent;
 	import me.army8735.xcution.events.EventBus;
-  import me.army8735.xcution.events.CustomEvent;
 	import me.army8735.xcution.http.HttpServer;
 	import me.army8735.xcution.system.Proxy;
 	
@@ -13,6 +14,7 @@ package me.army8735.xcution
 		private var 运行:CustomButton;
     private var 切换:CustomButton;
     private var 当前地址:String;
+    private var 添加:SingleButton;
 		
 		public function Btns(控制台:MsgField, 服务器:HttpServer, 首选地址:String)
 		{
@@ -76,9 +78,16 @@ package me.army8735.xcution
         运行.切换();
         切换.enabled = false;
       });
+      
+      添加 = new SingleButton("添加规则");
+      添加.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.添加规则));
+      });
+      添加.x = 切换.x + 切换.width + 10;
+      addChild(添加);
 		}
 		public function 重置():void {
-			运行.y = 切换.y = stage.stageHeight - 34;
+			运行.y = 切换.y = 添加.y = stage.stageHeight - 34;
 		}
     public function get 运行按钮():CustomButton {
       return 运行;

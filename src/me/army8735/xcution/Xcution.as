@@ -10,13 +10,16 @@ package me.army8735.xcution
   import flash.net.URLRequest;
   import flash.net.navigateToURL;
   
+  import me.army8735.xcution.btns.Btns;
   import me.army8735.xcution.events.CustomEvent;
   import me.army8735.xcution.events.EventBus;
   import me.army8735.xcution.http.HttpServer;
+  import me.army8735.xcution.proxy.ProxyPanel;
   import me.army8735.xcution.system.NetIP;
   
   public class Xcution extends Sprite
   {
+    private var 规则面板:ProxyPanel;
     private var 服务器:HttpServer;
     private var 控制台:MsgField;
     private var 按钮们:Btns;
@@ -26,9 +29,13 @@ package me.army8735.xcution
     {
       visible = false;
       
+      stage.color = 0xDDDDDD;
       stage.frameRate = 30;
       stage.scaleMode = StageScaleMode.NO_SCALE;
       stage.align = StageAlign.TOP_LEFT;
+      
+      规则面板 = new ProxyPanel();
+      addChild(规则面板);
       
       var 地址列表:Vector.<String> = NetIP.获取列表();
       var 首选地址:String = NetIP.首选地址(地址列表);
@@ -48,6 +55,7 @@ package me.army8735.xcution
       重置();
     }
     private function 重置(event:Event = null):void {
+      规则面板.重置();
       控制台.重置();
       服务器.重置();
       按钮们.重置();
