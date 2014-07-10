@@ -4,6 +4,8 @@ package me.army8735.xcution.events
   
   public class CustomEvent extends Event
   {
+    public static const 开启:String = "开启";
+    public static const 关闭:String = "关闭";
     public static const 刷新:String = "刷新";
     public static const 切换地址:String = "切换地址";
     public static const 启动错误:String = "启动错误";

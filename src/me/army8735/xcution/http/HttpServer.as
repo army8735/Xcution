@@ -97,6 +97,7 @@ package me.army8735.xcution.http
       }
       
       控制台.追加警告("已开启端口：" + 地址 + ":" + 端口号);
+      EventBus.dispatchEvent(new CustomEvent(CustomEvent.开启));
     }
     public function 关闭():void {
       if(服务器) {
@@ -109,6 +110,7 @@ package me.army8735.xcution.http
       服务器 = null;
       消息框.text = "---";
       重置();
+      EventBus.dispatchEvent(new CustomEvent(CustomEvent.关闭));
     }
     public function set 按钮们(按钮们引用:Btns):void {
       this.按钮们引用 = 按钮们引用;
@@ -140,25 +142,18 @@ package me.army8735.xcution.http
       var 缓冲:ByteArray = new ByteArray();
       套接字.readBytes(缓冲, 0, 套接字.bytesAvailable);
       var 内容:String = 缓冲.toString();
-      try
+      if(套接字 != null && 套接字.connected)
       {
-        if(套接字 != null && 套接字.connected)
-        {
-          var 索引:int = 内容.indexOf("\r\n");
-          var 行:RequestLine = new RequestLine(内容.substring(0, 索引));
-          var 头体:Array = 内容.substr(索引 + 2).split("\r\n\r\n");
-          var 头:HttpHead = new HttpHead(头体[0]);
-          var 体:HttpBody = new HttpBody(头体[1]);
-          远程连接(套接字, 内容, 行, 头, 体);
-        }
-        else 
-        {
-          trace("No socket connection.");
-        }
+        var 索引:int = 内容.indexOf("\r\n");
+        var 行:RequestLine = new RequestLine(内容.substring(0, 索引));
+        var 头体:Array = 内容.substr(索引 + 2).split("\r\n\r\n");
+        var 头:HttpHead = new HttpHead(头体[0]);
+        var 体:HttpBody = new HttpBody(头体[1]);
+        远程连接(套接字, 内容, 行, 头, 体);
       }
-      catch (error:Error)
+      else 
       {
-        trace(error.message);
+        trace("No socket connection.");
       }
     }
     private function 远程连接(套接字:Socket, 内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody):void {

@@ -33,11 +33,12 @@ package me.army8735.xcution.btns
         运行.切换();
         if(运行.状态) {
           服务器.开启(当前地址);
-          Proxy.设置(服务器.服务地址, 控制台);
         }
         else {
           服务器.关闭();
-          Proxy.取消(控制台);
+          if(切换.状态) {
+            Proxy.取消(控制台);
+          }
         }
       });
       addChild(运行);
@@ -67,6 +68,14 @@ package me.army8735.xcution.btns
       });
       addChild(切换);
       
+      EventBus.addEventListener(CustomEvent.开启, function(event:CustomEvent):void {
+        运行.enabled = true;
+        切换.enabled = 运行.状态;
+      });
+      EventBus.addEventListener(CustomEvent.关闭, function(event:CustomEvent):void {
+        运行.enabled = true;
+        切换.enabled = 运行.状态;
+      });
       EventBus.addEventListener(CustomEvent.刷新, function(event:CustomEvent):void {
         运行.enabled = true;
         切换.enabled = 运行.状态;
