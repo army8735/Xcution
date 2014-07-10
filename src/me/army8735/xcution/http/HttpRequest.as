@@ -228,6 +228,7 @@ package me.army8735.xcution.http
       }
     }
     private function 写入本地内容(映射:String):void {
+      控制台.追加高亮("映射：" + 行.地址 + " ☞ " + 映射);
       var 文件:File = new File(映射);
       if(!文件.exists) {
         本地文件不存在(映射);

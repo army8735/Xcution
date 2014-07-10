@@ -112,6 +112,7 @@ package me.army8735.xcution.proxy
       
       按钮移除.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
         面板.移除(规则);
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
       });
       按钮移除.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         按钮移除.alpha = 1;
@@ -349,7 +350,7 @@ package me.army8735.xcution.proxy
         case 单个文件:
           return 映射路径;
         case 文件路径:
-          return 映射路径 + 路径.slice(拦截路径.length);
+          return 映射路径 + 路径.slice(拦截路径.length).replace(/\//g, File.separator);
         case 正则匹配:
           return 路径.replace(new RegExp(拦截路径), 映射路径);
       }

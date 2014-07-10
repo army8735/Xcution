@@ -15,6 +15,8 @@ package me.army8735.xcution.btns
     private var 切换:CustomButton;
     private var 当前地址:String;
     private var 添加:SingleButton;
+    private var 清空规则:SingleButton;
+    private var 清空消息:SingleButton;
 		
 		public function Btns(控制台:MsgField, 服务器:HttpServer, 首选地址:String)
 		{
@@ -85,9 +87,23 @@ package me.army8735.xcution.btns
       });
       添加.x = 切换.x + 切换.width + 10;
       addChild(添加);
+      
+      清空规则 = new SingleButton("清空规则");
+      清空规则.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.清空规则));
+      });
+      清空规则.x = 添加.x + 添加.width + 10;
+      addChild(清空规则);
+      
+      清空消息 = new SingleButton("清空消息");
+      清空消息.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.清空消息));
+      });
+      清空消息.x = 清空规则.x + 清空规则.width + 10;
+      addChild(清空消息);
 		}
 		public function 重置():void {
-			运行.y = 切换.y = 添加.y = stage.stageHeight - 34;
+			运行.y = 切换.y = 添加.y = 清空规则.y = 清空消息.y = stage.stageHeight - 34;
 		}
     public function get 运行按钮():CustomButton {
       return 运行;

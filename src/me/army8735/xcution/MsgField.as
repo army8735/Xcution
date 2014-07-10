@@ -5,6 +5,9 @@ package me.army8735.xcution
 	import flash.text.TextFormat;
 	
 	import fl.controls.UIScrollBar;
+  
+  import me.army8735.xcution.events.CustomEvent;
+  import me.army8735.xcution.events.EventBus;
 	
 	public class MsgField extends Sprite
 	{
@@ -35,7 +38,6 @@ package me.army8735.xcution
 			滚动条.y = 0;
 			滚动条.scrollTarget = 文本框;
 			addChild(滚动条);
-		
 			
 			高亮样式 = new TextFormat();
 			高亮样式.color = 0x0000FF;
@@ -43,6 +45,13 @@ package me.army8735.xcution
       警告样式.color = 0xFF9900;
 			错误样式 = new TextFormat();
 			错误样式.color = 0xFF0000;
+      
+      EventBus.addEventListener(CustomEvent.清空消息, function(event:CustomEvent):void {
+        文本框.text = "";
+      });
+      EventBus.addEventListener(CustomEvent.清空规则, function(event:CustomEvent):void {
+        追加警告("规则已清空");
+      });
 		}
 		
 		public function 重置():void {
