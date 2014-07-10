@@ -20,7 +20,7 @@ package me.army8735.xcution.http
 
   public class HttpServer extends Sprite
   {
-    private var 服务器:ServerSocket = new ServerSocket();
+    private var 服务器:ServerSocket;
     private var 地址:String;
     private var 端口号:int;
     private var 消息框:TextField;
@@ -63,7 +63,10 @@ package me.army8735.xcution.http
       服务器 = new ServerSocket();
       切换地址(地址);
     }
-    public function 切换地址(地址:String, 首次:Boolean = false):void {
+    public function 切换地址(地址:String):void {
+      if(!服务器 || 服务器.bound) {
+        return;
+      }
       try {
         服务器.bind(8735, 地址);
       } catch(error:Error) {

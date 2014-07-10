@@ -9,7 +9,6 @@ package me.army8735.xcution.http
   import flash.utils.ByteArray;
   
   import me.army8735.xcution.MsgField;
-  import me.army8735.xcution.events.HttpEvent;
   
   public class HttpRequest extends EventDispatcher
   {
@@ -21,7 +20,6 @@ package me.army8735.xcution.http
     private var 头:HttpHead;
     private var 体:HttpBody;
     
-    private var 接收数据:ByteArray;
     private var 累计:uint;
     private var 总长度:int;
     private var 块传输:Boolean;
@@ -50,25 +48,50 @@ package me.army8735.xcution.http
       累计 = 0;
       总长度 = -1;
       块传输 = false;
-      接收数据 = new ByteArray();
       状态 = 开始;
       
       套接字 = new Socket();
       套接字.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
+        var 数据:ByteArray = new ByteArray();
         if(累计 == 0) {
-          接收数据.writeUTFBytes(错误码);
-          接收数据.writeUTFBytes("\r\n\r\n");
+          数据.writeUTFBytes(错误码);
+          数据.writeUTFBytes("\r\n\r\n");
         }
-        接收数据.writeUTFBytes(event.text);
-        dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
+        if(套接字.bytesAvailable > 0) {
+          套接字.readBytes(数据, 数据.length);
+        }
+        数据.writeUTFBytes(event.text);
+        if(客户端 && 客户端.connected) {
+          客户端.writeBytes(数据);
+          客户端.flush();
+          客户端.close();
+          客户端 = null;
+        }
+        if(套接字 && 套接字.connected) {
+          套接字.close();
+          套接字 = null;
+        }
       });
       套接字.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
+        var 数据:ByteArray = new ByteArray();
         if(累计 == 0) {
-          接收数据.writeUTFBytes(错误码);
-          接收数据.writeUTFBytes("\r\n\r\n");
+          数据.writeUTFBytes(错误码);
+          数据.writeUTFBytes("\r\n\r\n");
         }
-        接收数据.writeUTFBytes(event.text);
-        dispatchEvent(new HttpEvent(HttpEvent.关闭, 接收数据));
+        if(套接字.bytesAvailable > 0) {
+          套接字.readBytes(数据, 数据.length);
+        }
+        if(客户端 && 客户端.connected) {
+          客户端.writeBytes(数据);
+          客户端.flush();
+          客户端.close();
+          客户端 = null;
+        }
+        数据.writeUTFBytes(event.text);
+        if(套接字 && 套接字.connected) {
+          套接字.close();
+          套接字 = null;
+        }
       });
       套接字.addEventListener(Event.CONNECT, function(event:Event):void {
         控制台.追加("代理： " + 行.地址);

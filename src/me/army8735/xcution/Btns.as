@@ -69,6 +69,7 @@ package me.army8735.xcution
       });
       EventBus.addEventListener(CustomEvent.切换地址, function(event:CustomEvent):void {
         当前地址 = event.值 as String;
+        服务器.切换地址(当前地址);
       });
       EventBus.addEventListener(CustomEvent.启动错误, function(event:CustomEvent):void {
         运行.enabled = true;

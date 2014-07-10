@@ -105,7 +105,7 @@ package me.army8735.xcution
               上次选择.checked = false;
               项.checked = true;
               上次选择 = 项;
-              EventBus.dispatchEvent(new CustomEvent(CustomEvent.切换地址));
+              EventBus.dispatchEvent(new CustomEvent(CustomEvent.切换地址, 项.label));
             }
           });
           if(地址 == 首选地址) {
