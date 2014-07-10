@@ -50,5 +50,9 @@ package me.army8735.xcution.proxy
         (内容.getChildAt(i) as ProxyRule).y = i * ProxyRule.高度 + ProxyRule.边距;
       }
     }
+    public function 移除(规则:ProxyRule):void {
+      内容.removeChild(规则);
+      排序();
+    }
   }
 }

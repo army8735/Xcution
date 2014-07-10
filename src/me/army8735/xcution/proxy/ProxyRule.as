@@ -76,10 +76,12 @@ package me.army8735.xcution.proxy
       按钮开.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
         按钮开.visible = false;
         按钮关.visible = true;
+        状态值 = true;
       });
       按钮关.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
         按钮开.visible = true;
         按钮关.visible = false;
+        状态值 = false;
       });
       按钮开.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         按钮开.alpha = 1;
@@ -96,8 +98,7 @@ package me.army8735.xcution.proxy
       
       var 规则:ProxyRule = this;
       按钮移除.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
-        面板.removeChild(规则);
-        面板.排序();
+        面板.移除(规则);
       });
       按钮移除.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         按钮移除.alpha = 1;
@@ -154,6 +155,12 @@ package me.army8735.xcution.proxy
         路径映射图标.alpha = 0.2;
         自定义映射图标.alpha = 0.2;
       });
+      文件映射图标.addEventListener(MouseEvent.CONTEXT_MENU, function(event:MouseEvent):void {
+        改变类型(单个文件);
+        文件映射图标.alpha = 1;
+        路径映射图标.alpha = 0.2;
+        自定义映射图标.alpha = 0.2;
+      });
       文件映射图标.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         if(类型 != 单个文件) {
           文件映射图标.alpha = 0.6;
@@ -165,6 +172,12 @@ package me.army8735.xcution.proxy
         }
       });
       路径映射图标.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
+        改变类型(文件路径);
+        文件映射图标.alpha = 0.2;
+        路径映射图标.alpha = 1;
+        自定义映射图标.alpha = 0.2;
+      });
+      路径映射图标.addEventListener(MouseEvent.CONTEXT_MENU, function(event:MouseEvent):void {
         改变类型(文件路径);
         文件映射图标.alpha = 0.2;
         路径映射图标.alpha = 1;
@@ -186,6 +199,12 @@ package me.army8735.xcution.proxy
         路径映射图标.alpha = 0.2;
         自定义映射图标.alpha = 1;
       });
+      自定义映射图标.addEventListener(MouseEvent.CONTEXT_MENU, function(event:MouseEvent):void {
+        改变类型(正则匹配);
+        文件映射图标.alpha = 0.2;
+        路径映射图标.alpha = 0.2;
+        自定义映射图标.alpha = 1;
+      });
       自定义映射图标.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         if(类型 != 正则匹配) {
           自定义映射图标.alpha = 0.6;
@@ -196,6 +215,9 @@ package me.army8735.xcution.proxy
           自定义映射图标.alpha = 0.2;
         }
       });
+      文件映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);
+      路径映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);
+      自定义映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);
       
       addChild(文件映射图标);
       addChild(路径映射图标);
@@ -236,7 +258,7 @@ package me.army8735.xcution.proxy
     public function get 映射路径():String {
       return 映射文本.text.replace(/^\s+/, "").replace(/\s+$/, "");
     }
-    private function 选择文件侦听(event:MouseEvent):void {
+    private function 选择文件侦听(event:MouseEvent):void {trace(1)
       var 文件:File = new File();
       var 过滤:Array = new Array();
       switch(代理类型) {
