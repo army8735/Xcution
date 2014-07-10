@@ -24,8 +24,9 @@ package me.army8735.xcution.proxy
       滚动条 = new ScrollBar();
       addChild(滚动条);
       
+      var 面板:ProxyPanel = this;
       EventBus.addEventListener(CustomEvent.添加规则, function(event:CustomEvent):void {
-        var 规则:ProxyRule = new ProxyRule();
+        var 规则:ProxyRule = new ProxyRule(面板);
         规则.y = 内容.numChildren * (ProxyRule.高度 + ProxyRule.边距) + ProxyRule.边距;
         内容.addChild(规则);
       });
