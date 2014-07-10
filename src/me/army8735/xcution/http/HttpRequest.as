@@ -109,7 +109,7 @@ package me.army8735.xcution.http
       });
       套接字.addEventListener(Event.CONNECT, function(event:Event):void {
         控制台.追加("代理： " + 行.地址);
-        trace("发出远程链接：", 行.地址);
+        trace("成功远程链接：", 行.地址);
         套接字.writeUTFBytes(行.兼容内容);
         套接字.writeUTFBytes(头.内容);
         套接字.writeUTFBytes(体.内容);
@@ -140,6 +140,7 @@ package me.army8735.xcution.http
           套接字 = null;
         }
       });
+      trace("发出远程链接：", 行.地址, 行.主机, 行.端口);
       套接字.connect(行.主机, 行.端口);
     }
     private function 分析数据(数据:ByteArray):void {
@@ -283,13 +284,16 @@ package me.army8735.xcution.http
     }
     private function 本地文件不存在(映射:String, 消息:String = null):void {
       客户端.writeUTFBytes(错误码);
-      客户端.writeUTFBytes("Content-Type: text/plain; charset=utf-8\r\n");
+      客户端.writeUTFBytes("Content-Type: text/html; charset=utf-8\r\n");
       客户端.writeUTFBytes("Cache-Control: no-cache\r\n");
       客户端.writeUTFBytes("\r\n\r\n");
+      客户端.writeUTFBytes("<!DOCTYPE html><html><head><title>404</title></head><body><p>404:<br/>");
       客户端.writeUTFBytes(映射);
+      客户端.writeUTFBytes("</p>");
       if(消息) {
         客户端.writeUTFBytes(消息);
       }
+      客户端.writeUTFBytes("</body></html>");
       客户端.flush();
       客户端.close();
       客户端 = null;
