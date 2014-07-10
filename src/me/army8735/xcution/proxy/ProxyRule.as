@@ -9,6 +9,9 @@ package me.army8735.xcution.proxy
   import flash.text.TextFieldType;
   import flash.text.TextFormat;
   
+  import me.army8735.xcution.events.CustomEvent;
+  import me.army8735.xcution.events.EventBus;
+  
   public class ProxyRule extends Sprite
   {
     public static const 高度:int = 28;
@@ -34,12 +37,12 @@ package me.army8735.xcution.proxy
     private var 路径映射图标:Sprite;
     private var 自定义映射图标:Sprite;
     
-    public function ProxyRule(面板:ProxyPanel, 代理类型:int = 单个文件)
+    public function ProxyRule(面板:ProxyPanel, 代理类型:int = 单个文件, 拦截内容:String = "", 映射内容:String = "", 状态值:Boolean = false)
     {
       x = ProxyRule.边距;
       y = ProxyRule.边距;
       
-      状态值 = false;
+      this.状态值 = 状态值;
       this.代理类型 = 代理类型;
       
       [Embed(source="/img/okay.png")]
@@ -69,19 +72,30 @@ package me.army8735.xcution.proxy
       按钮开.x = 按钮开.y = 按钮关.x = 按钮关.y = 按钮移除.y = 6;
       按钮开.alpha = 按钮关.alpha = 0.5;
       按钮开.buttonMode = 按钮关.buttonMode = 按钮移除.buttonMode = true;
-      按钮开.visible = false;
+      
+      if(状态值) {
+        按钮开.visible = true;
+        按钮关.visible = false;
+      }
+      else {
+        按钮开.visible = false;
+        按钮关.visible = true;
+      }
       按钮移除.alpha = 0.2;
       按钮移除.x = 26;
       
+      var 规则:ProxyRule = this;
       按钮开.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
         按钮开.visible = false;
         按钮关.visible = true;
-        状态值 = true;
+        规则.状态值 = false;
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
       });
       按钮关.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
         按钮开.visible = true;
         按钮关.visible = false;
-        状态值 = false;
+        规则.状态值 = true;
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
       });
       按钮开.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         按钮开.alpha = 1;
@@ -96,7 +110,6 @@ package me.army8735.xcution.proxy
         按钮关.alpha = 0.5;
       });
       
-      var 规则:ProxyRule = this;
       按钮移除.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
         面板.移除(规则);
       });
@@ -126,6 +139,15 @@ package me.army8735.xcution.proxy
       拦截文本.backgroundColor = 映射文本.backgroundColor = 0xFFFFFF;
       拦截文本.y = 映射文本.y = 5;
       拦截文本.height = 映射文本.height = 18;
+      拦截文本.text = 拦截内容;
+      映射文本.text = 映射内容;
+      
+      拦截文本.addEventListener(Event.CHANGE, function(event:Event):void {
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
+      });
+      映射文本.addEventListener(Event.CHANGE, function(event:Event):void {
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
+      });
       
       箭头.y = 6;
       箭头.buttonMode = true;
@@ -145,9 +167,20 @@ package me.army8735.xcution.proxy
       
       文件映射图标.buttonMode = 路径映射图标.buttonMode = 自定义映射图标.buttonMode = true;
       文件映射图标.y = 路径映射图标.y = 自定义映射图标.y = 6;
-      文件映射图标.alpha = 1;
+      文件映射图标.alpha = 0.2;
       路径映射图标.alpha = 0.2;
       自定义映射图标.alpha = 0.2;
+      switch(代理类型) {
+        case 单个文件:
+          文件映射图标.alpha = 1;
+          break;
+        case 文件路径:
+          路径映射图标.alpha = 1;
+          break;
+        case 正则匹配:
+          自定义映射图标.alpha = 1;
+          break;
+      }
       
       文件映射图标.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
         改变类型(单个文件);
@@ -230,13 +263,27 @@ package me.army8735.xcution.proxy
     public function get 类型():int {
       return 代理类型;
     }
+    private function 绘制边框():void {
+      switch(类型) {
+        case 单个文件:
+          graphics.lineStyle(1, 0x99CC99);
+          break;
+        case 文件路径:
+          graphics.lineStyle(1, 0xFFCC99);
+          break;
+        case 正则匹配:
+          graphics.lineStyle(1, 0x99CCFF);
+          break;
+      }
+      graphics.drawRoundRect(0, 0, stage.stageWidth - 边距 * 8, 高度, 5);
+      graphics.endFill();
+    }
     public function 重置():void {
       graphics.clear();
       graphics.beginFill(0xFCFCFC);
       graphics.drawRoundRect(0, 0, stage.stageWidth - 边距 * 8, 高度, 5);
       graphics.endFill();
-      graphics.lineStyle(1, 0x99CCFF);
-      graphics.drawRoundRect(0, 0, stage.stageWidth - 边距 * 8, 高度, 5);
+      绘制边框();
       
       拦截文本.width = 映射文本.width = (stage.stageWidth - 边距 * 34) >> 1;
       拦截文本.x = 46;
@@ -251,6 +298,8 @@ package me.army8735.xcution.proxy
     }
     public function 改变类型(代理类型:int = 单个文件):void {
       this.代理类型 = 代理类型;
+      绘制边框();
+      EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
     }
     public function get 拦截路径():String {
       return 拦截文本.text.replace(/^\s+/, "").replace(/\s+$/, "");
@@ -261,7 +310,7 @@ package me.army8735.xcution.proxy
     private function 选择文件侦听(event:MouseEvent):void {
       var 文件:File = new File();
       var 过滤:Array = new Array();
-      switch(代理类型) {
+      switch(类型) {
         case 单个文件:
           文件.browseForOpen("选择单个文件", [
             new FileFilter("img", "*.jpg;*.jpeg;*.gif;*.png"),
@@ -282,7 +331,10 @@ package me.army8735.xcution.proxy
       });
     }
     public function 命中(路径:String):Boolean {
-      switch(代理类型) {
+      if(!状态) {
+        return false;
+      }
+      switch(类型) {
         case 单个文件:
           return 路径 == 拦截路径;
         case 文件路径:
@@ -293,7 +345,7 @@ package me.army8735.xcution.proxy
       return false;
     }
     public function 映射(路径:String):String {
-      switch(代理类型) {
+      switch(类型) {
         case 单个文件:
           return 映射路径;
         case 文件路径:
@@ -302,6 +354,15 @@ package me.army8735.xcution.proxy
           return 路径.replace(new RegExp(拦截路径), 映射路径);
       }
       throw new Error("未知错误，命中却无映射");
+    }
+    public function 序列化():String {
+      return 类型 + "\r\n" + 拦截路径 + "\r\n" + 映射路径 + "\r\n" + 状态;
+    }
+    public static function 反序列化(值:String):Array {
+      var 数组:Array = 值.split("\r\n");
+      数组[0] = parseInt(数组[0]);
+      数组[3] = 数组[3] === "true";
+      return 数组;
     }
   }
 }

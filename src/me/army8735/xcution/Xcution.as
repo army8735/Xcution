@@ -64,6 +64,28 @@ package me.army8735.xcution
     }
     private function 初始化菜单(地址列表:Vector.<String>, 首选地址:String, 服务器:HttpServer):void {
       var 文件:NativeMenu = new NativeMenu();
+      var 新建规则:NativeMenu = new NativeMenu();
+      
+      var 单个文件:NativeMenuItem = new NativeMenuItem("单个文件");
+      var 文件路径:NativeMenuItem = new NativeMenuItem("文件路径");
+      var 正则匹配:NativeMenuItem = new NativeMenuItem("正则匹配");
+      
+      单个文件.addEventListener(Event.SELECT, function(event:Event):void {
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.添加规则, 0));
+      });
+      文件路径.addEventListener(Event.SELECT, function(event:Event):void {
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.添加规则, 1));
+      });
+      正则匹配.addEventListener(Event.SELECT, function(event:Event):void {
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.添加规则, 2));
+      });
+      
+      新建规则.addItem(单个文件);
+      新建规则.addItem(文件路径);
+      新建规则.addItem(正则匹配);
+      
+      文件.addSubmenu(新建规则, "新建规则");
+      
       var 退出:NativeMenuItem = new NativeMenuItem("退出");
       退出.addEventListener(Event.SELECT, function(event:Event):void {
         stage.nativeWindow.close();

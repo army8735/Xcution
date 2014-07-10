@@ -1,6 +1,7 @@
 package me.army8735.xcution.proxy
 {
   import flash.display.Sprite;
+  import flash.net.SharedObject;
   
   import fl.controls.ScrollBar;
   
@@ -9,6 +10,8 @@ package me.army8735.xcution.proxy
   
   public class ProxyPanel extends Sprite
   {
+    public var 存储名:String = "Xcution-list";
+    
     private var 内容:Sprite;
     private var 滚动条:ScrollBar;
     
@@ -26,10 +29,32 @@ package me.army8735.xcution.proxy
       
       var 面板:ProxyPanel = this;
       EventBus.addEventListener(CustomEvent.添加规则, function(event:CustomEvent):void {
-        var 规则:ProxyRule = new ProxyRule(面板);
-        规则.y = 内容.numChildren * (ProxyRule.高度 + ProxyRule.边距) + ProxyRule.边距;
-        内容.addChild(规则);
+        var 规则:ProxyRule = new ProxyRule(面板, event.值 as int);
+        添加(规则);
       });
+      
+      var 存储:SharedObject = SharedObject.getLocal(存储名);
+      EventBus.addEventListener(CustomEvent.规则变化, function(event:CustomEvent):void {
+        var 数组:Vector.<String> = new Vector.<String>();
+        for(var i:int = 0; i < 内容.numChildren; i++) {
+          var 规则:ProxyRule = 内容.getChildAt(i) as ProxyRule;
+          数组.push(规则.序列化());
+        }
+        if(数组.length) {
+          存储.data.规则 = JSON.stringify(数组);
+          存储.flush();
+        }
+      });
+      if(存储.data.规则) {
+        var 数组:Array = JSON.parse(存储.data.规则) as Array;
+        if(数组) {
+          for(var i:int = 0; i < 数组.length; i++) {
+            var 数据:Array = ProxyRule.反序列化(数组[i]);
+            var 规则:ProxyRule = new ProxyRule(面板, 数据[0], 数据[1], 数据[2], 数据[3]);
+            添加(规则);
+          }
+        }
+      }
     }
     public function 重置():void {
       for(var i:int = 0; i < 内容.numChildren; i++) {
@@ -62,6 +87,10 @@ package me.army8735.xcution.proxy
         }
       }
       return null;
+    }
+    private function 添加(规则:ProxyRule):void {
+      规则.y = 内容.numChildren * (ProxyRule.高度 + ProxyRule.边距) + ProxyRule.边距;
+      内容.addChild(规则);
     }
   }
 }

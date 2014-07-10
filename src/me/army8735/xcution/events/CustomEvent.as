@@ -8,6 +8,7 @@ package me.army8735.xcution.events
     public static const 切换地址:String = "切换地址";
     public static const 启动错误:String = "启动错误";
     public static const 添加规则:String = "添加规则";
+    public static const 规则变化:String = "规则变化";
     
     private var 数据:*;
     
