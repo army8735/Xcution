@@ -8,6 +8,7 @@ package me.army8735.xcution.http
   import flash.filesystem.File;
   import flash.filesystem.FileMode;
   import flash.filesystem.FileStream;
+  import flash.net.SecureSocket;
   import flash.net.Socket;
   import flash.utils.ByteArray;
   
@@ -21,6 +22,7 @@ package me.army8735.xcution.http
     private var 规则面板:ProxyPanel;
     
     private var 套接字:Socket;
+    private var 缓存:ByteArray;
     private var 行:RequestLine;
     private var 头:HttpHead;
     private var 体:HttpBody;
@@ -35,6 +37,8 @@ package me.army8735.xcution.http
     
     private static const 正确码:String = "HTTP/1.1 200 OK\r\n";
     private static const 错误码:String = "HTTP/1.1 404 Not found\r\n";
+    
+    private var 安全套接字:SecureSocket;
     
     public function HttpRequest(客户端:Socket, 行:RequestLine, 头:HttpHead, 体:HttpBody, 控制台:MsgField, 规则面板:ProxyPanel)
     {
@@ -61,6 +65,7 @@ package me.army8735.xcution.http
       总长度 = -1;
       块传输 = false;
       状态 = 开始;
+      缓存 = new ByteArray();
       
       套接字 = new Socket();
       套接字.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
@@ -119,21 +124,27 @@ package me.army8735.xcution.http
         trace("远程链接数据：", 套接字.bytesAvailable, 行.地址);
         if(套接字.bytesAvailable > 0) {
           var 数据:ByteArray = new ByteArray();
+          if(缓存.bytesAvailable > 0) {
+            数据.readBytes(缓存);
+          }
           套接字.readBytes(数据, 0, 套接字.bytesAvailable);
           分析数据(数据);
         }
       });
       套接字.addEventListener(Event.CLOSE, function(event:Event):void {
         trace("远程链接关闭：", 行.地址);
+        var 数据:ByteArray = new ByteArray();
+        if(缓存.bytesAvailable > 0) {
+          数据.readBytes(缓存);
+        }
         if(套接字 && 套接字.bytesAvailable > 0) {
-          var 数据:ByteArray = new ByteArray();
           套接字.readBytes(数据, 0, 套接字.bytesAvailable);
-          if(客户端 && 客户端.connected) {
-            客户端.writeBytes(数据);
-            客户端.flush();
-            客户端.close();
-            客户端 = null;
-          }
+        }
+        if(客户端 && 客户端.connected) {
+          客户端.writeBytes(数据);
+          客户端.flush();
+          客户端.close();
+          客户端 = null;
         }
         if(套接字 && 套接字.connected) {
           套接字.close();
@@ -183,6 +194,7 @@ package me.army8735.xcution.http
               break;
             }
           }
+          缓存.readBytes(数据);
           break;
         case 完成头:
           if(数据.bytesAvailable > 0) {
