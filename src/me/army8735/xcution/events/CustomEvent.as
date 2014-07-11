@@ -13,6 +13,8 @@ package me.army8735.xcution.events
     public static const 规则变化:String = "规则变化";
     public static const 清空规则:String = "清空规则";
     public static const 清空消息:String = "清空消息";
+    public static const 设置:String = "设置";
+    public static const 关闭设置:String = "关闭设置";
     
     private var 数据:*;
     

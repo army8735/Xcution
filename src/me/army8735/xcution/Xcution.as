@@ -15,6 +15,8 @@ package me.army8735.xcution
   import me.army8735.xcution.events.EventBus;
   import me.army8735.xcution.http.HttpServer;
   import me.army8735.xcution.proxy.ProxyPanel;
+  import me.army8735.xcution.system.Config;
+  import me.army8735.xcution.system.Mask;
   import me.army8735.xcution.system.NetIP;
   
   public class Xcution extends Sprite
@@ -24,6 +26,8 @@ package me.army8735.xcution
     private var 控制台:MsgField;
     private var 按钮们:Btns;
     private var 上次选择:NativeMenuItem;
+    private var 遮罩:Mask;
+    private var 配置:Config;
     
     public function Xcution()
     {
@@ -43,13 +47,21 @@ package me.army8735.xcution
       控制台 = new MsgField();
       addChild(控制台);
       
-      服务器 = new HttpServer(规则面板, 控制台, 首选地址);
+      配置 = new Config();
+      服务器 = new HttpServer(规则面板, 控制台, 首选地址, 配置);
       addChild(服务器);
       
       初始化菜单(地址列表, 首选地址, 服务器);
       
       按钮们 = new Btns(控制台, 服务器, 首选地址);
       addChild(按钮们);
+      
+      遮罩 = new Mask();
+      遮罩.visible = false;
+      addChild(遮罩);
+      
+      配置.visible = false;
+      addChild(配置);
       
       stage.addEventListener(Event.RESIZE, 重置);
       重置();
@@ -59,6 +71,8 @@ package me.army8735.xcution
       控制台.重置();
       服务器.重置();
       按钮们.重置();
+      配置.重置();
+      遮罩.重置();
       
       visible = true;
     }
@@ -93,7 +107,11 @@ package me.army8735.xcution
       文件.addItem(退出);
       
       var 设置:NativeMenu = new NativeMenu();
-      设置.addItem(new NativeMenuItem("设置"));
+      var 设置按钮:NativeMenuItem = new NativeMenuItem("设置");
+      设置按钮.addEventListener(Event.SELECT, function(event:Event):void {
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.设置));
+      });
+      设置.addItem(设置按钮);
       
       var 选择:NativeMenu = new NativeMenu();
       var 列表:NativeMenu = new NativeMenu();

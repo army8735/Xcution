@@ -18,6 +18,7 @@ package me.army8735.xcution.http
   import me.army8735.xcution.events.CustomEvent;
   import me.army8735.xcution.events.EventBus;
   import me.army8735.xcution.proxy.ProxyPanel;
+  import me.army8735.xcution.system.Config;
 
   public class HttpServer extends Sprite
   {
@@ -28,11 +29,13 @@ package me.army8735.xcution.http
     private var 规则面板:ProxyPanel;
     private var 控制台:MsgField;
     private var 按钮们引用:Btns;
+    private var 配置:Config;
     
-    public function HttpServer(规则面板:ProxyPanel, 控制台:MsgField, 地址:String)
+    public function HttpServer(规则面板:ProxyPanel, 控制台:MsgField, 地址:String, 配置:Config)
     {
       this.规则面板 = 规则面板;
       this.控制台 = 控制台;
+      this.配置 = 配置;
       
       消息框 = new TextField();
       var 样式:TextFormat = new TextFormat();
@@ -71,7 +74,7 @@ package me.army8735.xcution.http
         return;
       }
       try {
-        服务器.bind(8735, 地址);
+        服务器.bind(配置.端口号, 地址);
       } catch(error:Error) {
         trace(error.getStackTrace());
         控制台.追加错误(error.message);
