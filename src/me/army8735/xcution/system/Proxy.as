@@ -11,9 +11,9 @@ package me.army8735.xcution.system
   import flash.filesystem.FileStream;
   import flash.system.Capabilities;
   
-  import me.army8735.xcution.events.EventBus;
-  import me.army8735.xcution.events.CustomEvent;
   import me.army8735.xcution.MsgField;
+  import me.army8735.xcution.events.CustomEvent;
+  import me.army8735.xcution.events.EventBus;
   
   public class Proxy
   {
@@ -21,7 +21,7 @@ package me.army8735.xcution.system
     private static const 设置尾:String = '" /f\r\nreg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyOverride /t REG_SZ /d "<local>" /f\r\n@echo switch on ';
     private static const 取消体:String = '@echo off\r\nreg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 0 /f\r\nreg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyServer /d "" /f\r\nreg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyOverride /t REG_SZ /d 0 /f\r\n@echo switch off';
     private static const 编码:String = File.systemCharset;
-    private static var 执行文件:File = File.userDirectory.resolvePath("xcution.temp.bat");
+    private static var 执行文件:File = new File(File.applicationDirectory.resolvePath("temp.bat").nativePath);
     private static var 设置退出侦听:Boolean = false;
     
     public static function 设置(服务地址:String, 控制台:MsgField):void {
@@ -39,7 +39,6 @@ package me.army8735.xcution.system
         文件流.writeMultiByte(服务地址, 编码);
         文件流.writeMultiByte(设置尾, 编码);
         文件流.writeMultiByte(服务地址, 编码);
-        trace(设置头.replace(/\r\n/g, "\n") + 服务地址 + 设置尾);
         文件流.close();
         
         var 进程信息:NativeProcessStartupInfo = new NativeProcessStartupInfo();
@@ -47,13 +46,12 @@ package me.army8735.xcution.system
         NativeApplication.nativeApplication.autoExit = true;
         
         var 盘符:String = File.desktopDirectory.nativePath.substr(0, 3);
-        trace("OS installed Drive:", 盘符);
         var cmd:File = new File(盘符).resolvePath("Windows/System32/cmd.exe");
         trace("cmd", cmd.url);
         进程信息.executable = cmd;
         var 参数:Vector.<String> = new Vector.<String>();
         参数.push("/c");
-        参数.push(执行文件.url.replace(/^file:\/+/, ""));
+        参数.push(执行文件.nativePath);
         进程信息.arguments = 参数;
         
         本地进程.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, function(event:ProgressEvent):void {
@@ -104,20 +102,18 @@ package me.army8735.xcution.system
         var 文件流:FileStream = new FileStream();
         文件流.open(执行文件, FileMode.WRITE);
         文件流.writeMultiByte(取消体, 编码);
-        trace(取消体.replace(/\r\n/g, "\n"));
         文件流.close();
         
         var 进程信息:NativeProcessStartupInfo = new NativeProcessStartupInfo();
         var 本地进程:NativeProcess = new NativeProcess();
         
         var 盘符:String = File.desktopDirectory.nativePath.substr(0, 3);
-        trace("OS installed Drive:", 盘符);
         var cmd:File = new File(盘符).resolvePath("Windows/System32/cmd.exe");
         trace("cmd", cmd.url);
         进程信息.executable = cmd;
         var 参数:Vector.<String> = new Vector.<String>();
         参数.push("/c");
-        参数.push(执行文件.url.replace(/^file:\/+/, ""));
+        参数.push(执行文件.nativePath);
         进程信息.arguments = 参数;
         
         本地进程.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, function(event:ProgressEvent):void {

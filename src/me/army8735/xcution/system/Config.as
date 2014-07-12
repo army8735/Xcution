@@ -2,13 +2,14 @@ package me.army8735.xcution.system
 {
   import flash.display.Sprite;
   import flash.events.MouseEvent;
+  import flash.net.SharedObject;
   import flash.text.TextField;
   import flash.text.TextFieldType;
   import flash.text.TextFormat;
   import flash.text.TextFormatAlign;
-  import flash.net.SharedObject;
   
   import fl.controls.Button;
+  import fl.controls.CheckBox;
   
   import me.army8735.xcution.events.CustomEvent;
   import me.army8735.xcution.events.EventBus;
@@ -21,6 +22,8 @@ package me.army8735.xcution.system
     
     private var HTTP文本框:TextField;
     private var HTTP输入:TextField;
+    private var SSL选择文本框:TextField;
+    private var SSL选择:CheckBox;
     private var SSL文本框:TextField;
     private var SSL输入:TextField;
     private var 确定:Button;
@@ -29,6 +32,8 @@ package me.army8735.xcution.system
     {
       HTTP文本框 = new TextField();
       HTTP输入 = new TextField();
+      SSL选择文本框 = new TextField();
+      SSL选择 = new CheckBox();
       SSL文本框 = new TextField();
       SSL输入 = new TextField();
       
@@ -37,7 +42,7 @@ package me.army8735.xcution.system
       样式.size = 12;
       样式.align = TextFormatAlign.RIGHT;
       HTTP文本框.defaultTextFormat = HTTP输入.defaultTextFormat = 样式;
-      HTTP文本框.text = "HTTP端口号（不填或0为随机）";
+      HTTP文本框.text = "HTTP端口号（不填或0为随机）：";
       HTTP文本框.x = 20;
       HTTP文本框.y = 20;
       HTTP文本框.width = HTTP文本框.textWidth;
@@ -52,27 +57,43 @@ package me.army8735.xcution.system
       HTTP输入.border = true;
       HTTP输入.borderColor = 0x999999;
       
+      SSL选择文本框.defaultTextFormat = 样式;
+      SSL选择文本框.text = "是否启用SSL（HTTPS）代理（需安装JRE）：";
+      SSL选择文本框.x = 20;
+      SSL选择文本框.y = 80;
+      SSL选择文本框.width = SSL选择文本框.textWidth;
+      SSL选择文本框.height = 20;
+      
+      SSL选择.setStyle("textFormat", 样式);
+      SSL选择.label = "是/否";
+      SSL选择.x = 20;
+      SSL选择.y = 100;
       
       SSL文本框.defaultTextFormat = HTTP输入.defaultTextFormat = 样式;
-      SSL文本框.text = "SSL端口号（不填或0为随机）";
+      SSL文本框.text = "SSL端口号（启用SSL必填）：";
       SSL文本框.x = 20;
-      SSL文本框.y = 80;
-      SSL文本框.width = HTTP文本框.textWidth;
+      SSL文本框.y = 140;
+      SSL文本框.width = SSL文本框.textWidth;
       SSL文本框.height = 20;
       
       SSL输入.type = TextFieldType.INPUT;
       SSL输入.restrict = "0-9";
       SSL输入.x = 20;
-      SSL输入.y = 100;
+      SSL输入.y = 160;
       SSL输入.width = 50;
       SSL输入.height = 18;
       SSL输入.border = true;
       SSL输入.borderColor = 0x999999;
       
       var 存储:SharedObject = SharedObject.getLocal(存储名);
-      if(存储.data.端口号) {
+      if(存储.data.HTTP端口号) {
         HTTP输入.text = 存储.data.HTTP端口号;
+      }
+      if(存储.data.SSL端口号) {
         SSL输入.text = 存储.data.SSL端口号;
+      }
+      if(存储.data.SSL选择 !== undefined) {
+        SSL选择.selected = 存储.data.SSL选择 == true;
       }
       
       确定 = new Button();
@@ -83,12 +104,15 @@ package me.army8735.xcution.system
       确定.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
         存储.data.HTTP端口号 = HTTP输入.text;
         存储.data.SSL端口号 = SSL输入.text;
+        存储.data.SSL选择 = SSL选择.selected;
         存储.flush();
         EventBus.dispatchEvent(new CustomEvent(CustomEvent.关闭设置));
       });
       
       addChild(HTTP文本框);
       addChild(HTTP输入);
+      addChild(SSL选择文本框);
+      addChild(SSL选择);
       addChild(SSL文本框);
       addChild(SSL输入);
       addChild(确定);
@@ -117,9 +141,12 @@ package me.army8735.xcution.system
     }
     public function get SSL端口号():int {
       if(SSL输入.text.length > 0) {
-        return parseInt(HTTP输入.text);
+        return parseInt(SSL输入.text);
       }
       return 0;
+    }
+    public function get 启用SSL():Boolean {
+      return SSL选择.selected;
     }
   }
 }

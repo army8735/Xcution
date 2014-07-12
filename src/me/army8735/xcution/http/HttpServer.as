@@ -1,14 +1,19 @@
 package me.army8735.xcution.http
 {
   import flash.desktop.NativeApplication;
+  import flash.desktop.NativeProcess;
+  import flash.desktop.NativeProcessStartupInfo;
   import flash.display.Sprite;
   import flash.events.Event;
   import flash.events.IOErrorEvent;
+  import flash.events.NativeProcessExitEvent;
   import flash.events.ProgressEvent;
   import flash.events.SecurityErrorEvent;
   import flash.events.ServerSocketConnectEvent;
+  import flash.filesystem.File;
   import flash.net.ServerSocket;
   import flash.net.Socket;
+  import flash.system.Capabilities;
   import flash.text.TextField;
   import flash.text.TextFormat;
   import flash.utils.ByteArray;
@@ -18,6 +23,7 @@ package me.army8735.xcution.http
   import me.army8735.xcution.events.CustomEvent;
   import me.army8735.xcution.events.EventBus;
   import me.army8735.xcution.proxy.ProxyPanel;
+  import me.army8735.xcution.system.CheckSSL;
   import me.army8735.xcution.system.Config;
 
   public class HttpServer extends Sprite
@@ -30,6 +36,8 @@ package me.army8735.xcution.http
     private var 控制台:MsgField;
     private var 按钮们引用:Btns;
     private var 配置:Config;
+    private static const JAR文件:File = new File(File.applicationDirectory.resolvePath("ssl.jar").nativePath);
+    private static const 编码:String = File.systemCharset;
     
     public function HttpServer(规则面板:ProxyPanel, 控制台:MsgField, 地址:String, 配置:Config)
     {
@@ -67,7 +75,76 @@ package me.army8735.xcution.http
     public function 开启(地址:String):void {
       关闭();
       服务器 = new ServerSocket();
-      切换地址(地址);
+      if(配置.启用SSL) {
+        监听SSL端口(地址);
+      }
+      else {
+        切换地址(地址);
+      }
+    }
+    public function 监听SSL端口(地址:String):void {
+      function 回调(event:CustomEvent):void {
+        var 占用:Boolean = event.值 as Boolean;
+        if(!占用) {
+          切换地址(地址);
+          调用JAVA(地址);
+        }
+        else {
+          EventBus.dispatchEvent(new CustomEvent(CustomEvent.启动错误, "SSL端口号不可用：" + 配置.SSL端口号));
+        }
+        EventBus.removeEventListener(CustomEvent.监听结果, 回调);
+      }
+      EventBus.addEventListener(CustomEvent.监听结果, 回调);
+      CheckSSL.监听(地址, 配置.SSL端口号);
+    }
+    private function 调用JAVA(地址:String):void {
+      if(JAR文件.exists == false) {
+        控制台.追加错误("找不到JAR文件：" + JAR文件.nativePath);
+        return;
+      }
+      if(/windows/i.test(Capabilities.os))
+      {
+        var 进程信息:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+        var 本地进程:NativeProcess = new NativeProcess();
+        NativeApplication.nativeApplication.autoExit = true;
+        
+        var 盘符:String = File.desktopDirectory.nativePath.substr(0, 3);
+        trace("OS installed Drive:", 盘符);
+        var cmd:File = new File(盘符).resolvePath("Windows/System32/cmd.exe");
+        trace("cmd", cmd.url);
+        进程信息.executable = cmd;
+        
+        var 参数:Vector.<String> = new Vector.<String>();
+        参数.push("java");
+        参数.push("-jar");
+        参数.push(JAR文件.nativePath);
+        参数.push(地址);
+        参数.push(配置.SSL端口号);
+        参数.push(配置.HTTP端口号);
+        进程信息.arguments = 参数;
+        
+        本地进程.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, function(event:ProgressEvent):void {
+          var s:String = 本地进程.standardOutput.readMultiByte(本地进程.standardOutput.bytesAvailable, 编码);
+          控制台.追加(s);
+        });
+        本地进程.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, function(event:ProgressEvent):void {
+          var s:String = 本地进程.standardError.readMultiByte(本地进程.standardError.bytesAvailable, 编码);
+          控制台.追加错误(s);
+        });
+        本地进程.addEventListener(NativeProcessExitEvent.EXIT, function(event:NativeProcessExitEvent):void {
+          NativeApplication.nativeApplication.removeEventListener(Event.EXITING, 退出);
+        });
+        
+        function 退出(event:Event):void {
+          本地进程.exit(true);
+        }
+        本地进程.start(进程信息);
+        
+        NativeApplication.nativeApplication.addEventListener(Event.EXITING, 退出);
+      }
+      else {
+        控制台.追加警告("Mac系统暂不支持JAR调用");
+      }
     }
     public function 切换地址(地址:String):void {
       if(!服务器 || 服务器.bound) {
@@ -76,10 +153,9 @@ package me.army8735.xcution.http
       try {
         服务器.bind(配置.HTTP端口号, 地址);
       } catch(error:Error) {
-        trace(error.getStackTrace());
-        控制台.追加错误(error.message);
+        trace(error.getStackTrace());;
         关闭();
-        EventBus.dispatchEvent(new CustomEvent(CustomEvent.启动错误));
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.启动错误, error.message));
         return;
       }
       this.地址 = 服务器.localAddress;
@@ -107,13 +183,13 @@ package me.army8735.xcution.http
         if(服务器.bound) {
           服务器.close();
           控制台.追加高亮("已关闭端口：" + 服务地址);
+          EventBus.dispatchEvent(new CustomEvent(CustomEvent.关闭));
         }
         服务器.removeEventListener(ServerSocketConnectEvent.CONNECT, 新链接侦听);
       }
       服务器 = null;
       消息框.text = "---";
       重置();
-      EventBus.dispatchEvent(new CustomEvent(CustomEvent.关闭));
     }
     public function set 按钮们(按钮们引用:Btns):void {
       this.按钮们引用 = 按钮们引用;

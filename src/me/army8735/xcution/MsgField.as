@@ -69,6 +69,9 @@ package me.army8735.xcution
       EventBus.addEventListener(CustomEvent.清空规则, function(event:CustomEvent):void {
         追加警告("规则已清空");
       });
+      EventBus.addEventListener(CustomEvent.启动错误, function(event:CustomEvent):void {
+        追加错误(event.值 as String);
+      });
 		}
 		
 		public function 重置():void {

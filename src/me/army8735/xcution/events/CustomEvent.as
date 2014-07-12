@@ -16,6 +16,7 @@ package me.army8735.xcution.events
     public static const 清空消息:String = "清空消息";
     public static const 设置:String = "设置";
     public static const 关闭设置:String = "关闭设置";
+    public static const 监听结果:String = "监听结果";
     
     private var 数据:*;
     
