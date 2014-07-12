@@ -74,7 +74,7 @@ package me.army8735.xcution.http
         return;
       }
       try {
-        服务器.bind(配置.端口号, 地址);
+        服务器.bind(配置.HTTP端口号, 地址);
       } catch(error:Error) {
         trace(error.getStackTrace());
         控制台.追加错误(error.message);
