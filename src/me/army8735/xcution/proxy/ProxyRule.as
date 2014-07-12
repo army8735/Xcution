@@ -183,18 +183,15 @@ package me.army8735.xcution.proxy
           break;
       }
       
-      文件映射图标.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
+      function 文件映射图标点击(event:MouseEvent):void {
         改变类型(单个文件);
         文件映射图标.alpha = 1;
         路径映射图标.alpha = 0.2;
         自定义映射图标.alpha = 0.2;
-      });
-      文件映射图标.addEventListener(MouseEvent.CONTEXT_MENU, function(event:MouseEvent):void {
-        改变类型(单个文件);
-        文件映射图标.alpha = 1;
-        路径映射图标.alpha = 0.2;
-        自定义映射图标.alpha = 0.2;
-      });
+      }
+      文件映射图标.addEventListener(MouseEvent.CLICK, 文件映射图标点击);
+      文件映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 文件映射图标点击);
+      文件映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 文件映射图标点击);
       文件映射图标.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         if(类型 != 单个文件) {
           文件映射图标.alpha = 0.6;
@@ -205,18 +202,15 @@ package me.army8735.xcution.proxy
           文件映射图标.alpha = 0.2;
         }
       });
-      路径映射图标.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
+      function 路径映射图标点击(event:MouseEvent):void {
         改变类型(文件路径);
         文件映射图标.alpha = 0.2;
         路径映射图标.alpha = 1;
         自定义映射图标.alpha = 0.2;
-      });
-      路径映射图标.addEventListener(MouseEvent.CONTEXT_MENU, function(event:MouseEvent):void {
-        改变类型(文件路径);
-        文件映射图标.alpha = 0.2;
-        路径映射图标.alpha = 1;
-        自定义映射图标.alpha = 0.2;
-      });
+      }
+      路径映射图标.addEventListener(MouseEvent.CLICK, 路径映射图标点击);
+      路径映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 路径映射图标点击);
+      路径映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 路径映射图标点击);
       路径映射图标.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         if(类型 != 文件路径) {
          路径映射图标.alpha = 0.6;
@@ -227,18 +221,15 @@ package me.army8735.xcution.proxy
           路径映射图标.alpha = 0.2;
         }
       });
-      自定义映射图标.addEventListener(MouseEvent.CLICK, function(event:MouseEvent):void {
+      function 自定义映射图标点击(event:MouseEvent):void {
         改变类型(正则匹配);
         文件映射图标.alpha = 0.2;
         路径映射图标.alpha = 0.2;
         自定义映射图标.alpha = 1;
-      });
-      自定义映射图标.addEventListener(MouseEvent.CONTEXT_MENU, function(event:MouseEvent):void {
-        改变类型(正则匹配);
-        文件映射图标.alpha = 0.2;
-        路径映射图标.alpha = 0.2;
-        自定义映射图标.alpha = 1;
-      });
+      }
+      自定义映射图标.addEventListener(MouseEvent.CLICK, 自定义映射图标点击);
+      自定义映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 自定义映射图标点击);
+      自定义映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 自定义映射图标点击);
       自定义映射图标.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         if(类型 != 正则匹配) {
           自定义映射图标.alpha = 0.6;
@@ -249,6 +240,9 @@ package me.army8735.xcution.proxy
           自定义映射图标.alpha = 0.2;
         }
       });
+      文件映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 选择文件侦听);
+      路径映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 选择文件侦听);
+      自定义映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 选择文件侦听);
       文件映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);
       路径映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);
       自定义映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);

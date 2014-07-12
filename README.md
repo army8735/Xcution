@@ -7,7 +7,8 @@ Xcution取自漫画《死神Bleach》中初代代理死神银城空吾的组织�
 
 ![preview](https://raw.githubusercontent.com/army8735/Xcution/master/snapshot.png)
 
-bin目录下为二进制安装包，目前有exe和dmg。运行前确保安装了Adobe AIR运行时：http://get.adobe.com/cn/air/
+bin目录下为二进制安装包，目前有exe和dmg。运行前确保安装了Adobe AIR运行时：
+http://get.adobe.com/cn/air/
 
 Xcution会遍历机器上的所有网卡接口，并以列表形式展现让你选择，优先选择非127.0.0.1的地址。端口号可自定配置义，不填或0为随机。
 
@@ -26,4 +27,5 @@ Xcution会遍历机器上的所有网卡接口，并以列表形式展现让你�
 https代理研究中，需要帮助……
 
 捐赠:
+
 ![preview](https://raw.githubusercontent.com/army8735/Xcution/master/contribute.png)

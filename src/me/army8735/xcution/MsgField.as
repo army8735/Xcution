@@ -1,19 +1,21 @@
 package me.army8735.xcution
 {
 	import flash.display.Sprite;
+	import flash.events.MouseEvent;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	
 	import fl.controls.UIScrollBar;
-  
-  import me.army8735.xcution.events.CustomEvent;
-  import me.army8735.xcution.events.EventBus;
+	
+	import me.army8735.xcution.events.CustomEvent;
+	import me.army8735.xcution.events.EventBus;
 	
 	public class MsgField extends Sprite
 	{
 		private var 文本框:TextField;
 		private var 滚动条:UIScrollBar;
 		private var 默认样式:TextFormat;
+    private var 代理样式:TextFormat;
 		private var 高亮样式:TextFormat;
     private var 警告样式:TextFormat;
 		private var 错误样式:TextFormat;
@@ -32,6 +34,19 @@ package me.army8735.xcution
 			文本框.x = 10;
 			文本框.y = 5;
 			文本框.wordWrap = true;
+      文本框.doubleClickEnabled = true;
+      文本框.addEventListener(MouseEvent.DOUBLE_CLICK, function(event:MouseEvent):void {
+        var 行索引:int = 文本框.getLineIndexAtPoint(event.localX, event.localY);
+        var 地址:String = 文本框.getLineText(行索引);
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.添加地址规则, 地址));
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
+      });
+      文本框.addEventListener(MouseEvent.MIDDLE_CLICK, function(event:MouseEvent):void {
+        var 行索引:int = 文本框.getLineIndexAtPoint(event.localX, event.localY);
+        var 地址:String = 文本框.getLineText(行索引);
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.添加地址规则, 地址));
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
+      });
 			addChild(文本框);
 			
 			滚动条 = new UIScrollBar();
@@ -45,6 +60,8 @@ package me.army8735.xcution
       警告样式.color = 0xFF9900;
 			错误样式 = new TextFormat();
 			错误样式.color = 0xFF0000;
+      代理样式 = new TextFormat();
+      代理样式.color = 0x990099;
       
       EventBus.addEventListener(CustomEvent.清空消息, function(event:CustomEvent):void {
         文本框.text = "";
@@ -68,6 +85,15 @@ package me.army8735.xcution
 			
 			y = stage.stageHeight >> 1;
 		}
+    public function 代理(s:String):void {
+      s = s.replace(/[\r\n]+/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
+      trace(s);
+      s += "\n";
+      文本框.appendText(s);
+      文本框.setTextFormat(代理样式, 文本框.text.length - s.length, 文本框.text.length);
+      文本框.scrollV = 文本框.numLines;
+      滚动条.update();
+    }
 		public function 追加(s:String):void {
       s = s.replace(/[\r\n]+/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
       trace(s);

@@ -46,6 +46,10 @@ package me.army8735.xcution.proxy
         var 规则:ProxyRule = new ProxyRule(面板, event.值 as int);
         添加(规则);
       });
+      EventBus.addEventListener(CustomEvent.添加地址规则, function(event:CustomEvent):void {
+        var 规则:ProxyRule = new ProxyRule(面板, ProxyRule.单个文件, event.值 as String);
+        添加(规则);
+      });
       
       var 存储:SharedObject = SharedObject.getLocal(存储名);
       EventBus.addEventListener(CustomEvent.规则变化, function(event:CustomEvent):void {

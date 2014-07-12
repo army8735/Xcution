@@ -113,7 +113,7 @@ package me.army8735.xcution.http
         }
       });
       套接字.addEventListener(Event.CONNECT, function(event:Event):void {
-        控制台.追加("代理： " + 行.地址);
+        控制台.代理(行.地址);
         trace("成功远程链接：", 行.地址);
         套接字.writeUTFBytes(行.兼容内容);
         套接字.writeUTFBytes(头.内容);
