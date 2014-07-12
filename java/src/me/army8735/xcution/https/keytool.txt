@@ -1,0 +1,4 @@
+生成服务器证书 
+keytool -genkey -v -alias xcution -keyalg RSA -keystore d:\keys\xcution.keystore -validity 36500
+生成服务器证书的cer文件
+keytool -keystore d:\keys\xcution.keystore -export -alias xcution -file d:\keys\xcution.cer
