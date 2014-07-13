@@ -9,7 +9,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 /**
- * socketÊµÏÖµÄÒ»¸ö¼òµ¥http¿Í»§¶Ë
+ * socketå®ç°çš„ä¸€ä¸ªç®€å•httpå®¢æˆ·ç«¯
  * 
  * @author Administrator
  *
@@ -29,7 +29,7 @@ public class HttpClient {
 	}
 
 	/**
-	 * ·¢ËÍGETÇëÇó
+	 * å‘é€GETè¯·æ±‚
 	 * 
 	 * @param host
 	 * @param url
@@ -50,7 +50,7 @@ public class HttpClient {
 	}
 
 	/**
-	 * ¶ÁÈ¡ÏìÓ¦
+	 * è¯»å–å“åº”
 	 * 
 	 * @return
 	 */
@@ -88,7 +88,7 @@ public class HttpClient {
 	}
 
 	/**
-	 * ·¢³öÒ»¸öhttpµÄgetÇëÇó
+	 * å‘å‡ºä¸€ä¸ªhttpçš„getè¯·æ±‚
 	 * 
 	 * @param host
 	 * @param url
