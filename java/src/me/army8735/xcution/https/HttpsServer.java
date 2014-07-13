@@ -1,4 +1,4 @@
-﻿package me.army8735.xcution.https;
+package me.army8735.xcution.https;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -20,7 +20,7 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
-public class HttpsServer1 {
+public class HttpsServer {
 	/**
 	 * ssl服务的端口号
 	 */
@@ -42,7 +42,7 @@ public class HttpsServer1 {
 			if (path == null) {
 				path = "";
 			}
-			String cert = path + "xcution.keystore";
+			String cert = path;
 			/** 要使用的证书密码 **/
 			char certPass[] = "123456".toCharArray();
 			/** 证书别称用的主要密码 **/
@@ -74,7 +74,7 @@ public class HttpsServer1 {
 		asPort = 80;
 		port = 50003;
 		// 存放证书的路径
-		String path = "d:\\keys\\";
+		String path = "xcution.keystore";
 
 		try {
 			// 从参数中获取数据
@@ -121,7 +121,7 @@ public class HttpsServer1 {
 			while (true) {
 				// 接受请求
 				SSLSocket socket = (SSLSocket) server.accept();
-				new HttpsServer1.CreateThread(socket);
+				new HttpsServer.CreateThread(socket);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -215,8 +215,8 @@ public class HttpsServer1 {
 				}
 
 				// 将数据转发到as对应的http服务器
-				String host = HttpsServer1.asHost;
-				HttpClient client = new HttpClient(host, HttpsServer1.asPort);
+				String host = HttpsServer.asHost;
+				HttpClient client = new HttpClient(host, HttpsServer.asPort);
 
 				System.out.println("请求的相对路径" + url);
 				// 发出http的get请求，暂时只支持httpget
