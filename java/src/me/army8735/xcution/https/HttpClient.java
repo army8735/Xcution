@@ -1,12 +1,13 @@
 package me.army8735.xcution.https;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.List;
 
 /**
  * socket实现的一个简单http客户端
@@ -34,14 +35,18 @@ public class HttpClient {
 	 * @param host
 	 * @param url
 	 */
-	private void sendGetRequest(String host, String url) {
+	private void sendGetRequest(String host, String url, List<String> headers) {
 		try {
 			OutputStream out = socket.getOutputStream();
 			StringBuilder sb = new StringBuilder();
 			sb.append("GET " + url + " HTTP/1.1\r\n");
 			sb.append("Host: " + host + "\r\n");
-			sb.append("Connection:keep-alive\r\n");
+			for (String head : headers) {
+				// 将原始的http头带上
+				sb.append(head).append("\r\n");
+			}
 			sb.append("\r\n");
+
 			out.write(sb.toString().getBytes("UTF-8"));
 			out.flush();
 		} catch (IOException e) {
@@ -54,37 +59,40 @@ public class HttpClient {
 	 * 
 	 * @return
 	 */
-	private String readResponse() {
-		BufferedReader in = null;
+	private byte[] readResponse() {
+		InputStream in = null;
 		try {
-			socket.setSoTimeout(200);
-			in = new BufferedReader(new InputStreamReader(
-					socket.getInputStream(), "UTF-8"));
+			socket.setSoTimeout(1000);
+			in = socket.getInputStream();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 			return null;
 		}
 
-		StringBuilder sb = new StringBuilder();
+		byte[] buffer = new byte[1024];
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		try {
-			while (true) {
-				String str = in.readLine();
-				if (str == null) {
-					break;
-				}
+			try {
+				while (true) {
+					int b = in.read(buffer);
 
-				sb.append(str).append("\r\n");
+					if (b <= 0) {
+						break;
+					}
+					
+					out.write(buffer, 0, b);
+				}
+			} catch (SocketTimeoutException e) {
+				System.err.println(e.getMessage());
 			}
 
 			socket.close();
-		} catch (SocketTimeoutException e) {
-			System.out.println(e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		return sb.toString();
+		return out.toByteArray();
 	}
 
 	/**
@@ -94,8 +102,8 @@ public class HttpClient {
 	 * @param url
 	 * @return
 	 */
-	public String httpGet(String host, String url) {
-		this.sendGetRequest(host, url);
+	public byte[] httpGet(String host, String url, List<String> headers) {
+		this.sendGetRequest(host, url, headers);
 		return this.readResponse();
 	}
 }

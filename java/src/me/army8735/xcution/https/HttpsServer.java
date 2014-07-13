@@ -1,23 +1,26 @@
-package me.army8735.xcution.https;
+﻿package me.army8735.xcution.https;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.KeyStore;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
-public class HttpsServer {
+public class HttpsServer1 {
 	/**
 	 * ssl服务的端口号
 	 */
@@ -47,7 +50,7 @@ public class HttpsServer {
 			/** 创建JKS密钥 **/
 			KeyStore keyStore = KeyStore.getInstance("JKS");
 			keyStore.load(new FileInputStream(cert), certPass);
-			/** 创建管理JKS密钥库的X.509密钥管理**/
+			/** 创建管理JKS密钥库的X.509密钥管理 **/
 			KeyManagerFactory keyManagerFactory = KeyManagerFactory
 					.getInstance("SunX509");
 			keyManagerFactory.init(keyStore, certAliaMainPass);
@@ -67,7 +70,7 @@ public class HttpsServer {
 
 	public static void main(String args[]) {
 		// 默认值
-		asHost = "www.baidu.com";
+		asHost = "www.tudou.com";
 		asPort = 80;
 		port = 50003;
 		// 存放证书的路径
@@ -75,10 +78,22 @@ public class HttpsServer {
 
 		try {
 			// 从参数中获取数据
-			String asHostStr = args[0];
-			String asPortStr = args[1];
-			String localPort = args[2];
-			path = args[3];
+			String asHostStr = null;
+			String localPort = null;
+			String asPortStr = null;
+
+			if (args.length > 0) {
+				asHostStr = args[0];
+			}
+			if (args.length > 1) {
+				localPort = args[1];
+			}
+			if (args.length > 2) {
+				asPortStr = args[2];
+			}
+			if (args.length > 3) {
+				path = args[3];
+			}
 
 			// 赋值
 			if (asHostStr != null) {
@@ -106,7 +121,7 @@ public class HttpsServer {
 			while (true) {
 				// 接受请求
 				SSLSocket socket = (SSLSocket) server.accept();
-				new HttpsServer.CreateThread(socket);
+				new HttpsServer1.CreateThread(socket);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -133,7 +148,7 @@ public class HttpsServer {
 	 */
 	static class CreateThread extends Thread {
 		private BufferedReader in;
-		private PrintWriter out;
+		private OutputStream out;
 		private Socket s;
 
 		public CreateThread(Socket socket) {
@@ -141,7 +156,7 @@ public class HttpsServer {
 				s = socket;
 				in = new BufferedReader(new InputStreamReader(
 						s.getInputStream(), "UTF-8"));
-				out = new PrintWriter(s.getOutputStream(), true);
+				out = s.getOutputStream();
 
 				// 开启线程，处理数据
 				start();
@@ -153,53 +168,77 @@ public class HttpsServer {
 
 		public void run() {
 			System.out.println("start run");
-
 			StringBuilder sb = new StringBuilder();
 
 			// 请求的相对路径
 			String url = null;
 
+			// 保存http头，作为转发
+			List<String> headers = new ArrayList<String>();
+
 			try {
-				// 读数据
-				while (true) {
-					String msg = in.readLine();
-					if (msg == null || msg.length() == 0) {
-						// TODO 结束判断可能不正确
-						System.out.println("接受结束");
-						break;
+				try {
+					// 读数据
+					while (true) {
+						String msg = in.readLine();
+						if (msg == null || msg.length() == 0) {
+							// TODO 结束判断可能不正确
+							System.out.println("接受结束");
+							break;
+						}
+
+						// 从http头中提取请求的url
+						if (msg.startsWith("GET")) {
+							url = msg.split(" ")[1];
+						}
+
+						if (url.equals("/favicon.ico")) {
+							return;
+						}
+
+						// 保存http头
+						if (!msg.startsWith("GET") && !msg.startsWith("Host")) {
+							headers.add(msg);
+						}
+
+						sb.append(msg).append("\n");
+						System.out.println("接收浏览器消息： " + msg);
 					}
 
-					// 从http头中提取请求的url
-					if (msg.startsWith("GET")) {
-						url = msg.split(" ")[1];
-					}
-
-					sb.append(msg).append("\n");
-					System.out.println("接收消息： " + msg);
+				} catch (SSLException e) {
+					// 出现ssl异常
+					System.err.println("ssl error");
+					e.printStackTrace();
+					return;
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 
-			} catch (Exception e) {
-				e.printStackTrace();
+				// 将数据转发到as对应的http服务器
+				String host = HttpsServer1.asHost;
+				HttpClient client = new HttpClient(host, HttpsServer1.asPort);
+
+				System.out.println("请求的相对路径" + url);
+				// 发出http的get请求，暂时只支持httpget
+				byte[] result = client.httpGet(host, url, headers);
+
+				try {
+					// 写数据回客户端
+					out.write(result);
+					out.flush();
+					s.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} finally {
+				System.out.println("end run");
+				try {
+					s.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 
-			// 将数据转发到as对应的http服务器
-			String host = HttpsServer.asHost;
-			HttpClient client = new HttpClient(host, HttpsServer.asPort);
-
-			System.out.println("请求的相对路径" + url);
-			// 发出http的get请求，暂时只支持httpget
-			String result = client.httpGet(host, url);
-
-			try {
-				// 写数据回客户端
-				out.write(result);
-				out.flush();
-				s.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			System.out.println("end run");
 		}
 	}
 }
