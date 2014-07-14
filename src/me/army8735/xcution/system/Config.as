@@ -50,6 +50,7 @@ package me.army8735.xcution.system
       
       HTTP输入.type = TextFieldType.INPUT;
       HTTP输入.restrict = "0-9";
+      HTTP输入.maxChars = 5;
       HTTP输入.x = 20;
       HTTP输入.y = 40;
       HTTP输入.width = 50;
@@ -78,6 +79,7 @@ package me.army8735.xcution.system
       
       SSL输入.type = TextFieldType.INPUT;
       SSL输入.restrict = "0-9";
+      SSL输入.maxChars = 5;
       SSL输入.x = 20;
       SSL输入.y = 160;
       SSL输入.width = 50;
