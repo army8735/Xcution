@@ -64,7 +64,13 @@ package me.army8735.xcution.proxy
         }
       });
       if(存储.data.规则) {
-        var 数组:Array = JSON.parse(存储.data.规则) as Array;
+        var 数组:Array;
+        try {
+          数组 = JSON.parse(存储.data.规则) as Array;
+        } catch(error:Error) {
+          数组 = null;
+          trace(error.getStackTrace());
+        }
         if(数组) {
           for(var i:int = 0; i < 数组.length; i++) {
             var 数据:Array = ProxyRule.反序列化(数组[i]);
