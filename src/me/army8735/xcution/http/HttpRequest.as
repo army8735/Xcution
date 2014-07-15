@@ -1,21 +1,19 @@
 package me.army8735.xcution.http
 {
   import flash.events.Event;
-  import flash.events.EventDispatcher;
   import flash.events.IOErrorEvent;
   import flash.events.ProgressEvent;
   import flash.events.SecurityErrorEvent;
   import flash.filesystem.File;
   import flash.filesystem.FileMode;
   import flash.filesystem.FileStream;
-  import flash.net.SecureSocket;
   import flash.net.Socket;
   import flash.utils.ByteArray;
   
   import me.army8735.xcution.MsgField;
   import me.army8735.xcution.proxy.ProxyPanel;
   
-  public class HttpRequest extends EventDispatcher
+  public class HttpRequest
   {
     private var 客户端:Socket;
     private var 控制台:MsgField;
@@ -37,8 +35,6 @@ package me.army8735.xcution.http
     
     private static const 正确码:String = "HTTP/1.1 200 OK\r\n";
     private static const 错误码:String = "HTTP/1.1 404 Not found\r\n";
-    
-    private var 安全套接字:SecureSocket;
     
     public function HttpRequest(客户端:Socket, 行:RequestLine, 头:HttpHead, 体:HttpBody, 控制台:MsgField, 规则面板:ProxyPanel)
     {
@@ -115,10 +111,12 @@ package me.army8735.xcution.http
       套接字.addEventListener(Event.CONNECT, function(event:Event):void {
         控制台.代理(行.地址);
         trace("成功远程链接：", 行.地址);
-        套接字.writeUTFBytes(行.兼容内容);
-        套接字.writeUTFBytes(头.内容);
-        套接字.writeUTFBytes(体.内容);
-        套接字.flush();
+        if(套接字 && 套接字.connected) {
+          套接字.writeUTFBytes(行.兼容内容);
+          套接字.writeUTFBytes(头.内容);
+          套接字.writeUTFBytes(体.内容);
+          套接字.flush();
+        }
       });
       套接字.addEventListener(ProgressEvent.SOCKET_DATA, function(event:ProgressEvent):void {
         trace("远程链接数据：", 套接字.bytesAvailable, 行.地址);

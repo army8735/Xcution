@@ -17,6 +17,7 @@ package me.army8735.xcution.http
   import flash.text.TextField;
   import flash.text.TextFormat;
   import flash.utils.ByteArray;
+  import flash.utils.Dictionary;
   
   import me.army8735.xcution.MsgField;
   import me.army8735.xcution.btns.Btns;
@@ -36,6 +37,7 @@ package me.army8735.xcution.http
     private var 控制台:MsgField;
     private var 按钮们引用:Btns;
     private var 配置:Config;
+    private var 安全字典:Dictionary;
     private static const JAR文件:File = new File(File.applicationDirectory.resolvePath("ssl.jar").nativePath);
     private static const 编码:String = File.systemCharset;
     
@@ -44,6 +46,7 @@ package me.army8735.xcution.http
       this.规则面板 = 规则面板;
       this.控制台 = 控制台;
       this.配置 = 配置;
+      安全字典 = new Dictionary();
       
       消息框 = new TextField();
       var 样式:TextFormat = new TextFormat();
@@ -220,15 +223,27 @@ package me.army8735.xcution.http
       var 套接字:Socket = event.target as Socket;
       var 缓冲:ByteArray = new ByteArray();
       套接字.readBytes(缓冲, 0, 套接字.bytesAvailable);
-      var 内容:String = 缓冲.toString();
+      var 键:String = 套接字.remoteAddress + ":" + 套接字.remotePort;
       if(套接字 != null && 套接字.connected)
       {
-        var 索引:int = 内容.indexOf("\r\n");
-        var 行:RequestLine = new RequestLine(内容.substring(0, 索引));
-        var 头体:Array = 内容.substr(索引 + 2).split("\r\n\r\n");
-        var 头:HttpHead = new HttpHead(头体[0]);
-        var 体:HttpBody = new HttpBody(头体[1]);
-        远程连接(套接字, 内容, 行, 头, 体);
+        if(安全字典[键] !== undefined) {
+          //
+        }
+        else {
+          var 内容:String = 缓冲.toString();
+          var 索引:int = 内容.indexOf("\r\n");
+          var 行:RequestLine = new RequestLine(内容.substring(0, 索引));
+          var 头体:Array = 内容.substr(索引 + 2).split("\r\n\r\n");
+          var 头:HttpHead = new HttpHead(头体[0]);
+          var 体:HttpBody = new HttpBody(头体[1]);
+          if(行.方法 == 'CONNECT') {
+            远程安全连接(套接字, 内容, 行, 头, 体);
+            安全字典[键] = 0;
+          }
+          else {
+            远程连接(套接字, 内容, 行, 头, 体);
+          }
+        }
       }
       else 
       {
@@ -237,6 +252,43 @@ package me.army8735.xcution.http
     }
     private function 远程连接(套接字:Socket, 内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody):void {
       var 请求:HttpRequest = new HttpRequest(套接字, 行, 头, 体, 控制台, 规则面板);
+      套接字.addEventListener(Event.CLOSE, function(event:Event):void {
+        trace("本地连接主动关闭：", 行.地址);
+        if(请求) {
+          请求.关闭();
+        }
+        if(套接字 && 套接字.connected) {
+          套接字.close()
+        }
+        套接字 = null;
+        请求 = null;
+      });
+      套接字.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
+        trace("本地连接异常：", 套接字.remoteAddress + ":" + 套接字.remotePort);
+        if(请求) {
+          请求.关闭();
+        }
+        if(套接字 && 套接字.connected) {
+          套接字.close()
+        }
+        套接字 = null;
+        请求 = null;
+      });
+      套接字.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
+        trace("本地连接安全异常：", 套接字.remoteAddress + ":" + 套接字.remotePort);
+        if(请求) {
+          请求.关闭();
+        }
+        if(套接字 && 套接字.connected) {
+          套接字.close();
+        }
+        套接字 = null;
+        请求 = null;
+      });
+      请求.链接();
+    }
+    private function 远程安全连接(套接字:Socket, 内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody):void {
+      var 请求:HttpsRequest = new HttpsRequest(套接字, 行, 头, 体, 控制台, 规则面板);
       套接字.addEventListener(Event.CLOSE, function(event:Event):void {
         trace("本地连接主动关闭：", 行.地址);
         if(请求) {
