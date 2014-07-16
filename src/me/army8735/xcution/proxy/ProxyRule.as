@@ -311,7 +311,7 @@ package me.army8735.xcution.proxy
             new FileFilter("img", "*.jpg;*.jpeg;*.gif;*.png"),
             new FileFilter("css", "*.css"),
             new FileFilter("js", "*.js"),
-            new FileFilter("all", "*")
+            new FileFilter("all", "*.*")
           ]);
           break;
         case 文件路径:
