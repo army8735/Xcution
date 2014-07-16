@@ -118,6 +118,7 @@ package me.army8735.xcution.http
         if(客户端 && 客户端.connected) {
           客户端.writeUTFBytes("HTTP/1.0 200 OK\r\n");
           客户端.writeUTFBytes("Host: " + 行.主机 + ":" + 行.端口 + "\r\n");
+          客户端.writeUTFBytes("Proxy-agent: CS255-MITMProxy/1.0\r\n");
           客户端.writeUTFBytes("\r\n");
           客户端.flush();
         }

@@ -227,7 +227,20 @@ package me.army8735.xcution.http
       if(套接字 != null && 套接字.connected)
       {
         if(安全字典[键] !== undefined) {
-          //
+          var SSL握手:SSLConnect = 安全字典[键] as SSLConnect;
+          SSL握手.解析(缓冲);
+//          var 内容类型:int = 缓冲.readUnsignedByte();
+//          if(内容类型 != 22) {
+//            trace("非握手协议：", 内容类型, 套接字.remoteAddress + ":" + 套接字.remotePort);
+//            套接字.close();
+//            套接字 = null;
+//            return;
+//          }
+//          var 主版本:int = 缓冲.readUnsignedByte();
+//          var 次版本:int = 缓冲.readUnsignedByte();
+//          var 压缩长度:int = 缓冲.readUnsignedByte();
+//          trace("握手：", 主版本, 次版本, 压缩长度, 套接字.remoteAddress + ":" + 套接字.remotePort);
+//          trace(缓冲)
         }
         else {
           var 内容:String = 缓冲.toString();
@@ -236,9 +249,9 @@ package me.army8735.xcution.http
           var 头体:Array = 内容.substr(索引 + 2).split("\r\n\r\n");
           var 头:HttpHead = new HttpHead(头体[0]);
           var 体:HttpBody = new HttpBody(头体[1]);
-          if(行.方法 == 'CONNECT') {
-            远程安全连接(套接字, 内容, 行, 头, 体);
-            安全字典[键] = 0;
+          if(行.方法 == "CONNECT") {
+            var 请求:HttpsRequest = 远程安全连接(套接字, 内容, 行, 头, 体);
+            安全字典[键] = new SSLConnect(请求, 套接字);
           }
           else {
             远程连接(套接字, 内容, 行, 头, 体);
@@ -250,7 +263,7 @@ package me.army8735.xcution.http
         trace("No socket connection.");
       }
     }
-    private function 远程连接(套接字:Socket, 内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody):void {
+    private function 远程连接(套接字:Socket, 内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody):HttpRequest {
       var 请求:HttpRequest = new HttpRequest(套接字, 行, 头, 体, 控制台, 规则面板);
       套接字.addEventListener(Event.CLOSE, function(event:Event):void {
         trace("本地连接主动关闭：", 行.地址);
@@ -286,8 +299,9 @@ package me.army8735.xcution.http
         请求 = null;
       });
       请求.链接();
+      return 请求;
     }
-    private function 远程安全连接(套接字:Socket, 内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody):void {
+    private function 远程安全连接(套接字:Socket, 内容:String, 行:RequestLine, 头:HttpHead, 体:HttpBody):HttpsRequest {
       var 请求:HttpsRequest = new HttpsRequest(套接字, 行, 头, 体, 控制台, 规则面板);
       套接字.addEventListener(Event.CLOSE, function(event:Event):void {
         trace("本地连接主动关闭：", 行.地址);
@@ -323,6 +337,7 @@ package me.army8735.xcution.http
         请求 = null;
       });
       请求.链接();
+      return 请求;
     }
   }
 }
