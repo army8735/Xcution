@@ -228,19 +228,7 @@ package me.army8735.xcution.http
       {
         if(安全字典[键] !== undefined) {
           var SSL握手:SSLConnect = 安全字典[键] as SSLConnect;
-          SSL握手.解析(缓冲);
-//          var 内容类型:int = 缓冲.readUnsignedByte();
-//          if(内容类型 != 22) {
-//            trace("非握手协议：", 内容类型, 套接字.remoteAddress + ":" + 套接字.remotePort);
-//            套接字.close();
-//            套接字 = null;
-//            return;
-//          }
-//          var 主版本:int = 缓冲.readUnsignedByte();
-//          var 次版本:int = 缓冲.readUnsignedByte();
-//          var 压缩长度:int = 缓冲.readUnsignedByte();
-//          trace("握手：", 主版本, 次版本, 压缩长度, 套接字.remoteAddress + ":" + 套接字.remotePort);
-//          trace(缓冲)
+          SSL握手.解析(缓冲, 套接字);
         }
         else {
           var 内容:String = 缓冲.toString();
