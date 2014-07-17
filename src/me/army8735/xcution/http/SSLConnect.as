@@ -1,6 +1,8 @@
 package me.army8735.xcution.http
 {
+  import com.hurlant.crypto.cert.X509Certificate;
   import com.hurlant.crypto.prng.Random;
+  import com.hurlant.util.Base64;
   
   import flash.events.IOErrorEvent;
   import flash.events.SecurityErrorEvent;
@@ -133,6 +135,7 @@ package me.army8735.xcution.http
     }
     private function 生成证书():ByteArray {
       var 文件:File = new File(File.applicationDirectory.resolvePath("server.cer").nativePath);
+      trace(文件.nativePath);
       if(!文件.exists) {
         throw new Error('证书不存在：' + 文件.nativePath);
       }
@@ -146,15 +149,25 @@ package me.army8735.xcution.http
       文件流.open(文件, FileMode.READ);
       var 数据:ByteArray = new ByteArray();
       文件流.readBytes(数据);
-      var 长度:int = 数据.length;
-      var 总长:int = 长度 + 3;
-      数据.position = 0;
-      数据.writeByte(总长 >> 16);
-      数据.writeShort(总长 & 65535);
-      数据.writeByte(长度 >> 16);
-      数据.writeShort(长度 & 65535);
-      数据.position = 0;
-      return 数据;
+      var 文本:String = 数据.toString();
+      文本 = 文本.replace('-----BEGIN CERTIFICATE-----', '')
+        .replace('-----END CERTIFICATE-----', '')
+        .replace(/\s/g, '');
+      var 证书:ByteArray = Base64.decodeToByteArray(文本);
+      var X509:X509Certificate = new X509Certificate(证书);
+      X509.getPublicKey();
+      trace(X509.getCommonName(), X509.getAlgorithmIdentifier());
+      var 名:String = X509.getCommonName();
+      var 算法:String = X509.getAlgorithmIdentifier();
+      证书.position = 0;
+      证书.writeByte(名.length);
+      证书.writeUTFBytes(名);
+      证书.writeByte(算法.length);
+      证书.writeUTFBytes(算法);
+      var 长度:int = 证书.length;
+      证书.position = 0;
+      证书.writeBytes(转为字节(长度, 3));
+      return 证书;
     }
   }
 }
