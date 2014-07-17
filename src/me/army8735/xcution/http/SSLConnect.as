@@ -74,6 +74,7 @@ package me.army8735.xcution.http
           发送报文(2, 返回你好);
           var 证书:ByteArray = 生成证书();
           发送报文(11, 证书);
+          发送报文(14, new ByteArray());
           break;
       }
       return 结果;
@@ -156,18 +157,14 @@ package me.army8735.xcution.http
       var 证书:ByteArray = Base64.decodeToByteArray(文本);
       var X509:X509Certificate = new X509Certificate(证书);
       X509.getPublicKey();
-      trace(X509.getCommonName(), X509.getAlgorithmIdentifier());
-      var 名:String = X509.getCommonName();
-      var 算法:String = X509.getAlgorithmIdentifier();
-      证书.position = 0;
-      证书.writeByte(名.length);
-      证书.writeUTFBytes(名);
-      证书.writeByte(算法.length);
-      证书.writeUTFBytes(算法);
+      var 返回:ByteArray = new ByteArray();
       var 长度:int = 证书.length;
-      证书.position = 0;
-      证书.writeBytes(转为字节(长度, 3));
-      return 证书;
+      var 总长度:int = 长度 + 3;
+      trace("总长", 长度, "证书长", 长度, "CN", X509.getCommonName(), "ALGO", X509.getAlgorithmIdentifier());
+      返回.writeBytes(转为字节(总长度, 3));
+      返回.writeBytes(转为字节(长度, 3));
+      返回.writeBytes(证书);
+      return 返回;
     }
   }
 }
