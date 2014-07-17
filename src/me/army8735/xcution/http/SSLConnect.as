@@ -136,7 +136,6 @@ package me.army8735.xcution.http
     }
     private function 生成证书():ByteArray {
       var 文件:File = new File(File.applicationDirectory.resolvePath("server.cer").nativePath);
-      trace(文件.nativePath);
       if(!文件.exists) {
         throw new Error('证书不存在：' + 文件.nativePath);
       }
@@ -155,12 +154,10 @@ package me.army8735.xcution.http
         .replace('-----END CERTIFICATE-----', '')
         .replace(/\s/g, '');
       var 证书:ByteArray = Base64.decodeToByteArray(文本);
-      var X509:X509Certificate = new X509Certificate(证书);
-      X509.getPublicKey();
       var 返回:ByteArray = new ByteArray();
       var 长度:int = 证书.length;
       var 总长度:int = 长度 + 3;
-      trace("总长", 长度, "证书长", 长度, "CN", X509.getCommonName(), "ALGO", X509.getAlgorithmIdentifier());
+      trace("总长", 长度, "证书长", 长度);
       返回.writeBytes(转为字节(总长度, 3));
       返回.writeBytes(转为字节(长度, 3));
       返回.writeBytes(证书);
