@@ -2,6 +2,11 @@ package me.army8735.xcution.http
 {
   import com.hurlant.crypto.prng.Random;
   
+  import flash.events.IOErrorEvent;
+  import flash.events.SecurityErrorEvent;
+  import flash.filesystem.File;
+  import flash.filesystem.FileMode;
+  import flash.filesystem.FileStream;
   import flash.net.Socket;
   import flash.utils.ByteArray;
 
@@ -17,7 +22,7 @@ package me.army8735.xcution.http
       this.客户端 = 客户端;
       状态 = 0;
     }
-    public function 解析(记录:ByteArray, 套接字:Socket):void {
+    public function 解析(记录:ByteArray):void {
       var 结果:ByteArray = new ByteArray();
       var 内容类型:int = 记录.readUnsignedByte();
       if(内容类型 != 22) {
@@ -35,16 +40,24 @@ package me.army8735.xcution.http
       var MAC:ByteArray = new ByteArray();
       记录.readBytes(明文, 0);
       trace("类型", 内容类型, "主版本", 主版本, "次版本", 次版本, "长度", 压缩长度, "MAC", MAC.length, "明文长", 明文.length);
-      解析报文(明文, 套接字);
-//      var 返回报文:ByteArray = 解析报文(明文, 套接字);
-//      结果.writeByte(22);
-//      结果.writeByte(3);
-//      结果.writeByte(0);
-//      结果.writeByte(返回协议报文.length);
-//      结果.writeBytes(返回报文);
-//      return 结果;
+      解析报文(明文);
     }
-    private function 解析报文(明文:ByteArray, 套接字:Socket):ByteArray {
+    private function 发送报文(类型:int, 数据:ByteArray):void {
+      if(客户端 && 客户端.connected) {
+        var 长度:int = 数据.length + 4;
+        客户端.writeByte(22);
+        客户端.writeByte(3);
+        客户端.writeByte(0);
+        客户端.writeShort(长度);
+        
+        客户端.writeByte(类型);
+        客户端.writeBytes(转为字节(数据.length, 3));
+        客户端.writeBytes(数据);
+        
+        客户端.flush();
+      }
+    }
+    private function 解析报文(明文:ByteArray):ByteArray {
       var 类型:int = 明文.readByte();
       var 长度:ByteArray = new ByteArray();
       明文.readBytes(长度, 0, 3);
@@ -56,26 +69,14 @@ package me.army8735.xcution.http
       switch(类型) {
         case 1:
           var 返回你好:ByteArray = 你好报文(内容);
-          结果.writeByte(2);
-          结果.writeBytes(转为字节(返回你好.length));
-          结果.writeBytes(返回你好);
-          var 返回长:int = 结果.length;
-          结果.position = 0;
-          结果.writeByte(22);
-          结果.writeByte(3);
-          结果.writeByte(0);
-          结果.writeShort(返回长);
-          if(客户端 && 客户端.connected) {
-            客户端.writeBytes(结果);
-            客户端.flush();
-            发送证书(客户端);
-          }
+          发送报文(2, 返回你好);
+          var 证书:ByteArray = 生成证书();
+          发送报文(11, 证书);
           break;
       }
       return 结果;
     }
     private function 你好报文(内容:ByteArray):ByteArray {
-      var 结果:ByteArray = new ByteArray();
       var 主版本:int = 内容.readByte();
       var 次版本:int = 内容.readByte();
       var 随机数:ByteArray = new ByteArray();
@@ -99,6 +100,7 @@ package me.army8735.xcution.http
       }
       trace("压缩算法标长", 压缩算法长, "压缩算法列表", 压缩算法列表.join(','));
       trace("扩展内容长", 内容.bytesAvailable);
+      var 结果:ByteArray = new ByteArray();
       结果.writeByte(3);
       结果.writeByte(0);
       var 随机数生成器:Random = new Random();
@@ -107,8 +109,8 @@ package me.army8735.xcution.http
       结果.writeBytes(返回随机数);
       结果.writeByte(32);
       随机数生成器.nextBytes(结果, 32);
-      结果.writeShort(4);
-      结果.writeByte(0);
+      结果.writeShort(4); //TLS_RSA_WITH_RC4_128_MD5
+      结果.writeByte(0); //无压缩
       return 结果;
     }
     private function 转为整型(数据:ByteArray):int {
@@ -123,13 +125,36 @@ package me.army8735.xcution.http
       值.writeUnsignedInt(数据);
       if(长度 > 0) {
         var 返回:ByteArray = new ByteArray();
-        返回.writeBytes(值, 32 - 长度);
+        值.position = 值.length - 长度;
+        值.readBytes(返回);
         return 返回;
       }
       return 值;
     }
-    private function 发送证书(客户端:Socket):void {
-      
+    private function 生成证书():ByteArray {
+      var 文件:File = new File(File.applicationDirectory.resolvePath("server.cer").nativePath);
+      if(!文件.exists) {
+        throw new Error('证书不存在：' + 文件.nativePath);
+      }
+      var 文件流:FileStream = new FileStream();
+      文件流.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
+        throw new Error(event.text);
+      });
+      文件流.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
+        throw new Error(event.text);
+      });
+      文件流.open(文件, FileMode.READ);
+      var 数据:ByteArray = new ByteArray();
+      文件流.readBytes(数据);
+      var 长度:int = 数据.length;
+      var 总长:int = 长度 + 3;
+      数据.position = 0;
+      数据.writeByte(总长 >> 16);
+      数据.writeShort(总长 & 65535);
+      数据.writeByte(长度 >> 16);
+      数据.writeShort(长度 & 65535);
+      数据.position = 0;
+      return 数据;
     }
   }
 }

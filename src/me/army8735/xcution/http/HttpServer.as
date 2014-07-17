@@ -228,7 +228,7 @@ package me.army8735.xcution.http
       {
         if(安全字典[键] !== undefined) {
           var SSL握手:SSLConnect = 安全字典[键] as SSLConnect;
-          SSL握手.解析(缓冲, 套接字);
+          SSL握手.解析(缓冲);
         }
         else {
           var 内容:String = 缓冲.toString();
