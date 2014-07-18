@@ -14,7 +14,7 @@ package me.army8735.xcution.system
           if(/\d+\.\d+\.\d+\.\d+/.test(地址.address)) {
             列表.push(地址.address);
           }
-          trace(地址.address);
+//          trace(地址.address);
         });
       });
       return 列表;

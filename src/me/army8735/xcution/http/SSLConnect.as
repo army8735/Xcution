@@ -1,7 +1,7 @@
 package me.army8735.xcution.http
 {
-  import com.hurlant.crypto.cert.X509Certificate;
   import com.hurlant.crypto.prng.Random;
+  import com.hurlant.crypto.tls.SSLSecurityParameters;
   import com.hurlant.util.Base64;
   
   import flash.events.IOErrorEvent;
@@ -76,6 +76,9 @@ package me.army8735.xcution.http
           发送报文(11, 证书);
           发送报文(14, new ByteArray());
           break;
+        case 20:
+          结束报文(内容, 长度值);
+          break;
       }
       return 结果;
     }
@@ -135,7 +138,7 @@ package me.army8735.xcution.http
       return 值;
     }
     private function 生成证书():ByteArray {
-      var 文件:File = new File(File.applicationDirectory.resolvePath("server.cer").nativePath);
+      var 文件:File = new File(File.applicationDirectory.resolvePath("XcutionRoot.cer").nativePath);
       if(!文件.exists) {
         throw new Error('证书不存在：' + 文件.nativePath);
       }
@@ -161,6 +164,13 @@ package me.army8735.xcution.http
       返回.writeBytes(转为字节(总长度, 3));
       返回.writeBytes(转为字节(长度, 3));
       返回.writeBytes(证书);
+      return 返回;
+    }
+    private function 结束报文(内容:ByteArray, 长度:int):ByteArray {
+      var 数据:ByteArray = new ByteArray();
+      内容.readBytes(数据, 0, 长度);
+      var 解密:SSLSecurityParameters = new SSLSecurityParameters(1);
+      var 返回:ByteArray = new ByteArray();
       return 返回;
     }
   }
