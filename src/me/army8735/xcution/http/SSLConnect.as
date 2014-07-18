@@ -17,12 +17,14 @@ package me.army8735.xcution.http
     private var 请求:HttpsRequest;
     private var 客户端:Socket;
     private var 状态:int;
+    private var 记录:ByteArray;
     
     public function SSLConnect(请求:HttpsRequest, 客户端:Socket)
     {
       this.请求 = 请求;
       this.客户端 = 客户端;
       状态 = 0;
+      记录 = new ByteArray();
     }
     public function 解析(记录:ByteArray):void {
       var 结果:ByteArray = new ByteArray();
@@ -52,6 +54,10 @@ package me.army8735.xcution.http
         客户端.writeByte(0);
         客户端.writeShort(长度);
         
+        记录.writeByte(类型);
+        记录.writeBytes(转为字节(数据.length, 3));
+        记录.writeBytes(数据);
+        
         客户端.writeByte(类型);
         客户端.writeBytes(转为字节(数据.length, 3));
         客户端.writeBytes(数据);
@@ -59,7 +65,7 @@ package me.army8735.xcution.http
         客户端.flush();
       }
     }
-    private function 解析报文(明文:ByteArray):ByteArray {
+    private function 解析报文(明文:ByteArray):void {
       var 类型:int = 明文.readByte();
       var 长度:ByteArray = new ByteArray();
       明文.readBytes(长度, 0, 3);
@@ -67,9 +73,12 @@ package me.army8735.xcution.http
       var 内容:ByteArray = new ByteArray();
       明文.readBytes(内容);
       trace("类型", 类型, "标长", 长度值, "内容长", 内容.length);
-      var 结果:ByteArray = new ByteArray();
+      if(长度值 != 内容.length) {
+        trace("握手包长度标识出错！");
+      }
       switch(类型) {
         case 1:
+          记录.writeBytes(明文, 0, 长度值 + 4);
           var 返回你好:ByteArray = 你好报文(内容);
           发送报文(2, 返回你好);
           var 证书:ByteArray = 生成证书();
@@ -80,7 +89,6 @@ package me.army8735.xcution.http
           结束报文(内容, 长度值);
           break;
       }
-      return 结果;
     }
     private function 你好报文(内容:ByteArray):ByteArray {
       var 主版本:int = 内容.readByte();
@@ -119,7 +127,7 @@ package me.army8735.xcution.http
       结果.writeByte(0); //无压缩
       return 结果;
     }
-    private function 转为整型(数据:ByteArray):int {
+    private function 转为整型(数据:ByteArray):int {trace('---', (数据.readUnsignedByte() << 16) | 数据.readUnsignedShort());
       var 值:int = 0;
       for(var i:int = 数据.length - 1; i > -1; i--) {
         值 += (数据[i] as int) << (数据.length - 1 - i);
