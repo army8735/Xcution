@@ -127,12 +127,8 @@ package me.army8735.xcution.http
       结果.writeByte(0); //无压缩
       return 结果;
     }
-    private function 转为整型(数据:ByteArray):int {trace('---', (数据.readUnsignedByte() << 16) | 数据.readUnsignedShort());
-      var 值:int = 0;
-      for(var i:int = 数据.length - 1; i > -1; i--) {
-        值 += (数据[i] as int) << (数据.length - 1 - i);
-      }
-      return 值;
+    private function 转为整型(数据:ByteArray):int {
+      return (数据.readUnsignedByte() << 16) | 数据.readUnsignedShort();
     }
     private function 转为字节(数据:uint, 长度:int = 0):ByteArray {
       var 值:ByteArray = new ByteArray();
