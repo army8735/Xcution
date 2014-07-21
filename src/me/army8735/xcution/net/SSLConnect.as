@@ -72,7 +72,7 @@ package me.army8735.xcution.net
       var 长度值:int = 转为整型(长度);
       var 内容:ByteArray = new ByteArray();
       明文.readBytes(内容);
-      trace("类型", 类型, "标长", 长度值, "内容长", 内容.length);
+      trace("报文", 类型, "标长", 长度值, "内容长", 内容.length);
       if(长度值 != 内容.length) {
         trace("握手包长度标识出错！");
       }
@@ -86,6 +86,7 @@ package me.army8735.xcution.net
           发送报文(14, new ByteArray());
           break;
         case 20:
+        case 255:
           结束报文(内容, 长度值);
           break;
       }
@@ -172,7 +173,7 @@ package me.army8735.xcution.net
     }
     private function 结束报文(内容:ByteArray, 长度:int):ByteArray {
       var 数据:ByteArray = new ByteArray();
-      内容.readBytes(数据, 0, 长度);
+//      内容.readBytes(数据, 0, 长度);
       var 解密:SSLSecurityParameters = new SSLSecurityParameters(1);
       var 返回:ByteArray = new ByteArray();
       return 返回;
