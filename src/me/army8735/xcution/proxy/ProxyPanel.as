@@ -74,7 +74,7 @@ package me.army8735.xcution.proxy
         if(数组) {
           for(var i:int = 0; i < 数组.length; i++) {
             var 数据:Array = ProxyRule.反序列化(数组[i]);
-            var 规则:ProxyRule = new ProxyRule(面板, 数据[0], 数据[1], 数据[2], 数据[3]);
+            var 规则:ProxyRule = new ProxyRule(面板, 数据[0], 数据[1], 数据[2], 数据[3], 数据[4]);
             添加(规则);
           }
         }
@@ -116,11 +116,11 @@ package me.army8735.xcution.proxy
       排序();
       更新滚动条();
     }
-    public function 获取映射(路径:String):String {
+    public function 获取映射(路径:String):ProxyRule {
       for(var i:int = 0; i < 内容.numChildren; i++) {
         var 规则:ProxyRule = 内容.getChildAt(i) as ProxyRule;
         if(规则.命中(路径)) {
-          return 规则.映射(路径);
+          return 规则;
         }
       }
       return null;

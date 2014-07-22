@@ -1,5 +1,7 @@
 package me.army8735.xcution.proxy
 {
+  import flash.display.NativeMenu;
+  import flash.display.NativeMenuItem;
   import flash.display.Sprite;
   import flash.events.Event;
   import flash.events.MouseEvent;
@@ -37,7 +39,11 @@ package me.army8735.xcution.proxy
     private var 路径映射图标:Sprite;
     private var 自定义映射图标:Sprite;
     
-    public function ProxyRule(面板:ProxyPanel, 代理类型:int = 单个文件, 拦截内容:String = "", 映射内容:String = "", 状态值:Boolean = false)
+    private var 菜单:NativeMenu;
+    private var 转为匿名:NativeMenu;
+    private var 开启匿名:NativeMenuItem;
+    
+    public function ProxyRule(面板:ProxyPanel, 代理类型:int = 单个文件, 拦截内容:String = "", 映射内容:String = "", 状态值:Boolean = false, 匿名值:Boolean = false)
     {
       x = ProxyRule.边距;
       y = ProxyRule.边距;
@@ -191,7 +197,7 @@ package me.army8735.xcution.proxy
       }
       文件映射图标.addEventListener(MouseEvent.CLICK, 文件映射图标点击);
       文件映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 文件映射图标点击);
-      文件映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 文件映射图标点击);
+//      文件映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 文件映射图标点击);
       文件映射图标.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         if(类型 != 单个文件) {
           文件映射图标.alpha = 0.6;
@@ -210,7 +216,7 @@ package me.army8735.xcution.proxy
       }
       路径映射图标.addEventListener(MouseEvent.CLICK, 路径映射图标点击);
       路径映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 路径映射图标点击);
-      路径映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 路径映射图标点击);
+//      路径映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 路径映射图标点击);
       路径映射图标.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         if(类型 != 文件路径) {
          路径映射图标.alpha = 0.6;
@@ -229,7 +235,7 @@ package me.army8735.xcution.proxy
       }
       自定义映射图标.addEventListener(MouseEvent.CLICK, 自定义映射图标点击);
       自定义映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 自定义映射图标点击);
-      自定义映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 自定义映射图标点击);
+//      自定义映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 自定义映射图标点击);
       自定义映射图标.addEventListener(MouseEvent.MOUSE_OVER, function(event:MouseEvent):void {
         if(类型 != 正则匹配) {
           自定义映射图标.alpha = 0.6;
@@ -243,9 +249,9 @@ package me.army8735.xcution.proxy
       文件映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 选择文件侦听);
       路径映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 选择文件侦听);
       自定义映射图标.addEventListener(MouseEvent.MIDDLE_CLICK, 选择文件侦听);
-      文件映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);
-      路径映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);
-      自定义映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);
+//      文件映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);
+//      路径映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);
+//      自定义映射图标.addEventListener(MouseEvent.CONTEXT_MENU, 选择文件侦听);
       
       addChild(文件映射图标);
       addChild(路径映射图标);
@@ -254,6 +260,26 @@ package me.army8735.xcution.proxy
       addEventListener(Event.ADDED_TO_STAGE, function(event:Event):void {
         重置();
       });
+      
+      菜单 = new NativeMenu();
+      转为匿名 = new NativeMenu();
+      var 关闭匿名:NativeMenuItem = new NativeMenuItem("关闭");
+      关闭匿名.addEventListener(Event.SELECT, function(event:Event):void {
+        关闭匿名.checked = true;
+        开启匿名.checked = false;
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
+      });
+      开启匿名 = new NativeMenuItem("开启");
+      开启匿名.addEventListener(Event.SELECT, function(event:Event):void {
+        关闭匿名.checked = false;
+        开启匿名.checked = true;
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
+      });
+      匿名值 ? 开启匿名.checked = true : 关闭匿名.checked = true;
+      转为匿名.addItem(关闭匿名);
+      转为匿名.addItem(开启匿名);
+      菜单.addSubmenu(转为匿名, "转为匿名");
+      contextMenu = 菜单;
     }
     public function get 类型():int {
       return 代理类型;
@@ -302,6 +328,9 @@ package me.army8735.xcution.proxy
     public function get 映射路径():String {
       return 映射文本.text.replace(/^\s+/, "").replace(/\s+$/, "");
     }
+    public function get 匿名转换():Boolean {
+      return 开启匿名.checked;
+    }
     private function 选择文件侦听(event:MouseEvent):void {
       var 文件:File = new File();
       var 过滤:Array = new Array();
@@ -323,6 +352,7 @@ package me.army8735.xcution.proxy
       }
       文件.addEventListener(Event.SELECT, function(event:Event):void {
         映射文本.text = 文件.nativePath;
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
       });
     }
     public function 命中(路径:String):Boolean {
@@ -351,12 +381,13 @@ package me.army8735.xcution.proxy
       throw new Error("未知错误，命中却无映射");
     }
     public function 序列化():String {
-      return 类型 + "\r\n" + 拦截路径 + "\r\n" + 映射路径 + "\r\n" + 状态;
+      return 类型 + "\r\n" + 拦截路径 + "\r\n" + 映射路径 + "\r\n" + 状态 + "\r\n" + 匿名转换;
     }
     public static function 反序列化(值:String):Array {
       var 数组:Array = 值.split("\r\n");
       数组[0] = parseInt(数组[0]);
       数组[3] = 数组[3] === "true";
+      数组[4] = 数组[4] === "true";
       return 数组;
     }
   }

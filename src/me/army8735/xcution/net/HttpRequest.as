@@ -12,6 +12,7 @@ package me.army8735.xcution.net
   
   import me.army8735.xcution.MsgField;
   import me.army8735.xcution.proxy.ProxyPanel;
+  import me.army8735.xcution.proxy.ProxyRule;
   
   public class HttpRequest
   {
@@ -52,7 +53,7 @@ package me.army8735.xcution.net
       套接字 = null;
     }
     public function 链接():void {
-      var 映射:String = 规则面板.获取映射(行.地址);
+      var 映射:ProxyRule = 规则面板.获取映射(行.地址);
       if(映射) {
         写入本地内容(映射);
         return;
@@ -238,18 +239,19 @@ package me.army8735.xcution.net
           break;
       }
     }
-    private function 写入本地内容(映射:String):void {
-      控制台.追加高亮("映射：" + 行.地址 + " ☞ " + 映射);
-      var 文件:File = new File(映射);
+    private function 写入本地内容(映射:ProxyRule):void {
+      var 本地地址:String = 映射.映射(行.地址);
+      控制台.追加高亮("映射：" + 行.地址 + " ☞ " + 本地地址);
+      var 文件:File = new File(本地地址);
       if(!文件.exists) {
-        本地文件不存在(映射);
+        本地文件不存在(本地地址);
       }
       var 文件流:FileStream = new FileStream();
       文件流.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void {
-        本地文件不存在(映射, event.text);
+        本地文件不存在(本地地址, event.text);
       });
       文件流.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void {
-        本地文件不存在(映射, event.text);
+        本地文件不存在(本地地址, event.text);
       });
       文件流.open(文件, FileMode.READ);
       var 数据:ByteArray = new ByteArray();
@@ -257,10 +259,15 @@ package me.army8735.xcution.net
       客户端.writeUTFBytes(正确码);
       客户端.writeUTFBytes("Cache-Control: no-cache\r\n");
       客户端.writeUTFBytes("Content-Type: ");
-      var 扩展名:String = /\.(\w+)$/.test(映射) ? (/\.(\w+)$/.exec(映射)[1]) : "";
+      var 扩展名:String = /\.(\w+)$/.test(本地地址) ? (/\.(\w+)$/.exec(本地地址)[1]) : "";
       switch(扩展名) {
         case "js":
           客户端.writeUTFBytes("application/javascript; charset=utf-8");
+          if(映射.匿名转换) {
+            var 新数据:ByteArray = new ByteArray();
+            新数据.writeUTFBytes(数据.toString().replace(/\b(define\s*\(\s*)(['"])(.+?)\2\s*,/, '$1'));
+            数据 = 新数据;
+          }
           break;
         case "css":
           客户端.writeUTFBytes("text/css; charset=utf-8");
@@ -286,7 +293,7 @@ package me.army8735.xcution.net
         default:
           客户端.writeUTFBytes("application/octet-stream");
       }
-      客户端.writeUTFBytes("\r\n\r\n\r\n");
+      客户端.writeUTFBytes("\r\n\r\n");
       客户端.writeBytes(数据);
       客户端.flush();
       客户端.close();

@@ -14,6 +14,7 @@ package me.army8735.xcution.net
   
   import me.army8735.xcution.MsgField;
   import me.army8735.xcution.proxy.ProxyPanel;
+  import me.army8735.xcution.proxy.ProxyRule;
   
   public class HttpsRequest
   {
@@ -54,7 +55,7 @@ package me.army8735.xcution.net
       套接字 = null;
     }
     public function 链接():void {
-      var 映射:String = 规则面板.获取映射(行.地址);
+      var 映射:ProxyRule = 规则面板.获取映射(行.地址);
       if(映射) {
         return;
       }
