@@ -35,18 +35,16 @@ package me.army8735.xcution
 			文本框.y = 5;
 			文本框.wordWrap = true;
       文本框.doubleClickEnabled = true;
-      文本框.addEventListener(MouseEvent.DOUBLE_CLICK, function(event:MouseEvent):void {
+      function 侦听(event:MouseEvent):void {
         var 行索引:int = 文本框.getLineIndexAtPoint(event.localX, event.localY);
         var 地址:String = 文本框.getLineText(行索引);
-        EventBus.dispatchEvent(new CustomEvent(CustomEvent.添加地址规则, 地址));
-        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
-      });
-      文本框.addEventListener(MouseEvent.MIDDLE_CLICK, function(event:MouseEvent):void {
-        var 行索引:int = 文本框.getLineIndexAtPoint(event.localX, event.localY);
-        var 地址:String = 文本框.getLineText(行索引);
-        EventBus.dispatchEvent(new CustomEvent(CustomEvent.添加地址规则, 地址));
-        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
-      });
+        if(地址.length) {
+          EventBus.dispatchEvent(new CustomEvent(CustomEvent.添加地址规则, 地址));
+          EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
+        }
+      }
+      文本框.addEventListener(MouseEvent.DOUBLE_CLICK, 侦听);
+      文本框.addEventListener(MouseEvent.MIDDLE_CLICK, 侦听);
 			addChild(文本框);
 			
 			滚动条 = new UIScrollBar();

@@ -262,23 +262,23 @@ package me.army8735.xcution.net
       var 扩展名:String = /\.(\w+)$/.test(本地地址) ? (/\.(\w+)$/.exec(本地地址)[1]) : "";
       switch(扩展名) {
         case "js":
-          客户端.writeUTFBytes("application/javascript; charset=utf-8");
+          客户端.writeUTFBytes("application/javascript; charset=" + 映射.编码);
           if(映射.匿名转换) {
             var 新数据:ByteArray = new ByteArray();
-            新数据.writeUTFBytes(数据.toString().replace(/\b(define\s*\(\s*)(['"])(.+?)\2\s*,/, '$1'));
+            新数据.writeUTFBytes(数据.toString().replace(/\b(define\s*\(\s*)(['"])(.+?)\2\s*,\s*/, '$1'));
             数据 = 新数据;
           }
           break;
         case "css":
-          客户端.writeUTFBytes("text/css; charset=utf-8");
+          客户端.writeUTFBytes("text/css; charset=" + 映射.编码);
           break;
         case "html":
-          客户端.writeUTFBytes("text/html; charset=utf-8");
+          客户端.writeUTFBytes("text/html; charset=" + 映射.编码);
           break;
         case "tpl":
         case "txt":
         case "vm":
-          客户端.writeUTFBytes("text/plain; charset=utf-8");
+          客户端.writeUTFBytes("text/plain; charset=" + 映射.编码);
           break;
         case "jpg":
         case "jpeg":
