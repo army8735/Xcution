@@ -265,7 +265,7 @@ package me.army8735.xcution.net
           客户端.writeUTFBytes("application/javascript; charset=" + 映射.编码);
           if(映射.匿名转换) {
             var 新数据:ByteArray = new ByteArray();
-            新数据.writeUTFBytes(数据.toString().replace(/\b(define\s*\(\s*)(['"])(.+?)\2\s*,\s*/, '$1'));
+            新数据.writeUTFBytes(数据.toString().replace(/\b(define\s*\(\s*)(['"])(.+?)\2\s*,/, '$1'));
             数据 = 新数据;
           }
           break;
