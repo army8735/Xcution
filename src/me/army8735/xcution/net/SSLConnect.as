@@ -18,6 +18,7 @@ package me.army8735.xcution.net
     private var 客户端:Socket;
     private var 状态:int;
     private var 记录:ByteArray;
+    private var 解密:SSLSecurityParameters = new SSLSecurityParameters(1);
     
     public function SSLConnect(请求:HttpsRequest, 客户端:Socket)
     {
@@ -126,6 +127,10 @@ package me.army8735.xcution.net
       随机数生成器.nextBytes(结果, 32);
       结果.writeShort(4); //TLS_RSA_WITH_RC4_128_MD5
       结果.writeByte(0); //无压缩
+      解密.setCipher(4);
+      解密.setCompression(0);
+      解密.setClientRandom(随机数);
+      解密.setServerRandom(返回随机数);
       return 结果;
     }
     private function 转为整型(数据:ByteArray):int {
@@ -173,9 +178,9 @@ package me.army8735.xcution.net
     }
     private function 结束报文(内容:ByteArray, 长度:int):ByteArray {
       var 数据:ByteArray = new ByteArray();
-//      内容.readBytes(数据, 0, 长度);
-      var 解密:SSLSecurityParameters = new SSLSecurityParameters(1);
-      var 返回:ByteArray = new ByteArray();
+      内容.readBytes(数据, 0, 36);
+      var 返回:ByteArray = 解密.computeVerifyData(0, 记录);
+      trace(返回.length, 内容.length);
       return 返回;
     }
   }
