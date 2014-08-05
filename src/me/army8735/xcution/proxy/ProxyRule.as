@@ -42,8 +42,10 @@ package me.army8735.xcution.proxy
     private var 菜单:NativeMenu;
     private var 转为匿名:NativeMenu;
     private var 开启匿名:NativeMenuItem;
+    private var 关闭匿名:NativeMenuItem;
     private var 编码菜单:NativeMenu;
     private var UTF8:NativeMenuItem;
+    private var GBK:NativeMenuItem;
     
     public function ProxyRule(面板:ProxyPanel, 代理类型:int = 单个文件, 拦截内容:String = "", 映射内容:String = "", 状态值:Boolean = false, 匿名值:Boolean = false, 编码:String = "UTF-8")
     {
@@ -265,7 +267,7 @@ package me.army8735.xcution.proxy
       
       菜单 = new NativeMenu();
       转为匿名 = new NativeMenu();
-      var 关闭匿名:NativeMenuItem = new NativeMenuItem("关闭");
+      关闭匿名 = new NativeMenuItem("关闭");
       关闭匿名.addEventListener(Event.SELECT, function(event:Event):void {
         关闭匿名.checked = true;
         开启匿名.checked = false;
@@ -280,7 +282,7 @@ package me.army8735.xcution.proxy
       匿名值 ? 开启匿名.checked = true : 关闭匿名.checked = true;
       编码菜单 = new NativeMenu();
       UTF8 = new NativeMenuItem("UTF8");
-      var GBK:NativeMenuItem = new NativeMenuItem("GBK");
+      GBK = new NativeMenuItem("GBK");
       UTF8.addEventListener(Event.SELECT, function(event:Event):void {
         UTF8.checked = true;
         GBK.checked = false;
