@@ -37,6 +37,7 @@ package me.army8735.xcution
       stage.frameRate = 30;
       stage.scaleMode = StageScaleMode.NO_SCALE;
       stage.align = StageAlign.TOP_LEFT;
+      stage.frameRate = 1;
       
       规则面板 = new ProxyPanel();
       addChild(规则面板);
