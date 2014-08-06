@@ -46,8 +46,11 @@ package me.army8735.xcution.proxy
     private var 编码菜单:NativeMenu;
     private var UTF8:NativeMenuItem;
     private var GBK:NativeMenuItem;
+    private var 过滤DEBUG:NativeMenu;
+    private var 不去除:NativeMenuItem;
+    private var 去除:NativeMenuItem;
     
-    public function ProxyRule(面板:ProxyPanel, 代理类型:int = 单个文件, 拦截内容:String = "", 映射内容:String = "", 状态值:Boolean = false, 匿名值:Boolean = false, 编码:String = "UTF-8")
+    public function ProxyRule(面板:ProxyPanel, 代理类型:int = 单个文件, 拦截内容:String = "", 映射内容:String = "", 状态值:Boolean = false, 匿名值:Boolean = false, 编码:String = "UTF-8", 过滤:Boolean = false)
     {
       x = ProxyRule.边距;
       y = ProxyRule.边距;
@@ -266,6 +269,7 @@ package me.army8735.xcution.proxy
       });
       
       菜单 = new NativeMenu();
+      
       转为匿名 = new NativeMenu();
       关闭匿名 = new NativeMenuItem("关闭");
       关闭匿名.addEventListener(Event.SELECT, function(event:Event):void {
@@ -280,6 +284,7 @@ package me.army8735.xcution.proxy
         EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
       });
       匿名值 ? 开启匿名.checked = true : 关闭匿名.checked = true;
+      
       编码菜单 = new NativeMenu();
       UTF8 = new NativeMenuItem("UTF8");
       GBK = new NativeMenuItem("GBK");
@@ -295,12 +300,30 @@ package me.army8735.xcution.proxy
       });
       编码 == "UTF-8" ? UTF8.checked = true : GBK.checked = true;
       
+      过滤DEBUG = new NativeMenu();
+      不去除 = new NativeMenuItem("关闭");
+      去除 = new NativeMenuItem("开启");
+      不去除.addEventListener(Event.SELECT, function(event:Event):void {
+        不去除.checked = true;
+        去除.checked = false;
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
+      });
+      去除.addEventListener(Event.SELECT, function(event:Event):void {
+        不去除.checked = false;
+        去除.checked = true;
+        EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
+      });
+      过滤 == true ? 去除.checked = true : 不去除.checked = true;
+      
       转为匿名.addItem(关闭匿名);
       转为匿名.addItem(开启匿名);
       编码菜单.addItem(UTF8);
       编码菜单.addItem(GBK);
+      过滤DEBUG.addItem(不去除);
+      过滤DEBUG.addItem(去除);
       菜单.addSubmenu(转为匿名, "转为匿名");
       菜单.addSubmenu(编码菜单, "编码");
+      菜单.addSubmenu(过滤DEBUG, "过滤debug");
       contextMenu = 菜单;
     }
     public function get 类型():int {
@@ -356,6 +379,10 @@ package me.army8735.xcution.proxy
     public function get 编码():String {
       return UTF8.checked ? "UTF-8" : "GBK";
     }
+    public function get 过滤():Boolean {
+      return 去除.checked;
+    }
+    
     private function 选择文件侦听(event:MouseEvent):void {
       var 文件:File = new File();
       var 过滤:Array = new Array();
@@ -406,13 +433,14 @@ package me.army8735.xcution.proxy
       throw new Error("未知错误，命中却无映射");
     }
     public function 序列化():String {
-      return 类型 + "\r\n" + 拦截路径 + "\r\n" + 映射路径 + "\r\n" + 状态 + "\r\n" + 匿名转换 + "\r\n" + 编码;
+      return 类型 + "\r\n" + 拦截路径 + "\r\n" + 映射路径 + "\r\n" + 状态 + "\r\n" + 匿名转换 + "\r\n" + 编码 + "\r\n" + 过滤;
     }
     public static function 反序列化(值:String):Array {
       var 数组:Array = 值.split("\r\n");
       数组[0] = parseInt(数组[0]);
       数组[3] = 数组[3] === "true";
       数组[4] = 数组[4] === "true";
+      数组[6] = 数组[6] === "true";
       return 数组;
     }
   }

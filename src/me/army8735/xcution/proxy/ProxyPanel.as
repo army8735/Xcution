@@ -73,8 +73,8 @@ package me.army8735.xcution.proxy
         }
         if(数组) {
           for(var i:int = 0; i < 数组.length; i++) {
-            var 数据:Array = ProxyRule.反序列化(数组[i]);
-            var 规则:ProxyRule = new ProxyRule(面板, 数据[0], 数据[1], 数据[2], 数据[3], 数据[4], 数据[5]);
+            var 数据:Array = ProxyRule.反序列化(数组[i]);trace(数据)
+            var 规则:ProxyRule = new ProxyRule(面板, 数据[0], 数据[1], 数据[2], 数据[3], 数据[4], 数据[5], 数据[6]);
             添加(规则);
           }
         }

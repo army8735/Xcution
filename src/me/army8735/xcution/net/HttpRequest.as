@@ -268,6 +268,11 @@ package me.army8735.xcution.net
             新数据.writeUTFBytes(数据.toString().replace(/\b(define\s*\(\s*)(['"])(.+?)\2\s*,/, '$1'));
             数据 = 新数据;
           }
+          if(映射.过滤) {
+            var 新数据2:ByteArray = new ByteArray();
+            新数据2.writeUTFBytes(数据.toString().replace(/\b-debug\b/, ''));
+            数据 = 新数据2;
+          }
           break;
         case "css":
           客户端.writeUTFBytes("text/css; charset=" + 映射.编码);
