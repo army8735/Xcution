@@ -283,6 +283,7 @@ package me.army8735.xcution.net
         case "tpl":
         case "txt":
         case "vm":
+        case "handlebars":
           客户端.writeUTFBytes("text/plain; charset=" + 映射.编码);
           break;
         case "jpg":
