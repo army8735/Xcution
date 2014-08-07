@@ -112,7 +112,7 @@ package me.army8735.xcution.btns
       addChild(清空消息);
 		}
 		public function 重置():void {
-			运行.y = 切换.y = 添加.y = 清空规则.y = 清空消息.y = stage.stageHeight - 34;
+			运行.y = 切换.y = 添加.y = 清空规则.y = 清空消息.y = stage.stageHeight - 32;
 		}
     public function get 运行按钮():CustomButton {
       return 运行;

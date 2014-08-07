@@ -6,6 +6,7 @@ package me.army8735.xcution
 	import flash.text.TextFormat;
 	
 	import fl.controls.UIScrollBar;
+  import fl.controls.ScrollBarDirection;
 	
 	import me.army8735.xcution.events.CustomEvent;
 	import me.army8735.xcution.events.EventBus;
@@ -53,9 +54,9 @@ package me.army8735.xcution
 			addChild(滚动条);
       
       滚动条2 = new UIScrollBar();
-//      滚动条2.direction = ;
-//      滚动条2.scrollTarget = 文本框;
-//      addChild(滚动条2);
+      滚动条2.direction = ScrollBarDirection.HORIZONTAL;
+      滚动条2.scrollTarget = 文本框;
+      addChild(滚动条2);
 			
 			高亮样式 = new TextFormat();
 			高亮样式.color = 0x0000FF;
@@ -81,13 +82,16 @@ package me.army8735.xcution
 			graphics.clear();
 			graphics.lineStyle(1, 0xA0A0A0);
 			graphics.beginFill(0xFCFCFC);
-			graphics.drawRoundRect(5, 0, stage.stageWidth - 30, (stage.stageHeight >> 1) - 40, 3);
+			graphics.drawRoundRect(5, 0, stage.stageWidth - 30, (stage.stageHeight >> 1) - 60, 3);
 			graphics.endFill();
 			
 			文本框.width = stage.stageWidth - 40;
-			文本框.height = (stage.stageHeight >> 1) - 50;
+			文本框.height = (stage.stageHeight >> 1) - 70;
 			滚动条.x = 文本框.x + 文本框.width + 10;
 			滚动条.height = 文本框.height + 10;
+      滚动条2.x = 5;
+      滚动条2.y = 文本框.y + 文本框.height + 10;
+      滚动条2.width = 文本框.width + 10;
 			
 			y = stage.stageHeight >> 1;
 		}
@@ -99,6 +103,7 @@ package me.army8735.xcution
       文本框.setTextFormat(代理样式, 文本框.text.length - s.length, 文本框.text.length);
       文本框.scrollV = 文本框.numLines;
       滚动条.update();
+      滚动条2.update();
     }
 		public function 追加(s:String):void {
       s = s.replace(/[\r\n]+/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
@@ -108,6 +113,7 @@ package me.army8735.xcution
 			文本框.setTextFormat(默认样式, 文本框.text.length - s.length, 文本框.text.length);
 			文本框.scrollV = 文本框.numLines;
 			滚动条.update();
+      滚动条2.update();
 		}
 		public function 追加高亮(s:String):void {
       s = s.replace(/[\r\n]+/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
@@ -117,6 +123,7 @@ package me.army8735.xcution
 			文本框.setTextFormat(高亮样式, 文本框.text.length - s.length, 文本框.text.length);
 			文本框.scrollV = 文本框.numLines;
 			滚动条.update();
+      滚动条2.update();
 		}
     public function 追加警告(s:String):void {
       s = s.replace(/[\r\n]+/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
@@ -126,6 +133,7 @@ package me.army8735.xcution
       文本框.setTextFormat(警告样式, 文本框.text.length - s.length, 文本框.text.length);
       文本框.scrollV = 文本框.numLines;
       滚动条.update();
+      滚动条2.update();
     }
 		public function 追加错误(s:String):void {
       s = s.replace(/[\r\n]+/g, "\n").replace(/^\s+/, "").replace(/\s+$/, "");
@@ -135,10 +143,12 @@ package me.army8735.xcution
 			文本框.setTextFormat(错误样式, 文本框.text.length - s.length, 文本框.text.length);
 			文本框.scrollV = 文本框.numLines;
 			滚动条.update();
+      滚动条2.update();
 		}
 		public function 清空():void {
 			文本框.text = "";
 			滚动条.update();
+      滚动条2.update();
 		}
 	}
 }
