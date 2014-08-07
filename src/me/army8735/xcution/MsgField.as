@@ -33,7 +33,6 @@ package me.army8735.xcution
 			文本框.defaultTextFormat = 默认样式;
 			文本框.x = 10;
 			文本框.y = 5;
-			文本框.wordWrap = true;
       文本框.doubleClickEnabled = true;
       function 侦听(event:MouseEvent):void {
         var 行索引:int = 文本框.getLineIndexAtPoint(event.localX, event.localY);
