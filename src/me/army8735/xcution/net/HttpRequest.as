@@ -284,6 +284,7 @@ package me.army8735.xcution.net
         case "txt":
         case "vm":
         case "handlebars":
+        case "json":
           客户端.writeUTFBytes("text/plain; charset=" + 映射.编码);
           break;
         case "jpg":
