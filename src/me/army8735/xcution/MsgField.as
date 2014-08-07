@@ -14,6 +14,7 @@ package me.army8735.xcution
 	{
 		private var 文本框:TextField;
 		private var 滚动条:UIScrollBar;
+    private var 滚动条2:UIScrollBar;
 		private var 默认样式:TextFormat;
     private var 代理样式:TextFormat;
 		private var 高亮样式:TextFormat;
@@ -50,6 +51,11 @@ package me.army8735.xcution
 			滚动条.y = 0;
 			滚动条.scrollTarget = 文本框;
 			addChild(滚动条);
+      
+      滚动条2 = new UIScrollBar();
+//      滚动条2.direction = ;
+//      滚动条2.scrollTarget = 文本框;
+//      addChild(滚动条2);
 			
 			高亮样式 = new TextFormat();
 			高亮样式.color = 0x0000FF;
