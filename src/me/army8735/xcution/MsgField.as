@@ -37,7 +37,7 @@ package me.army8735.xcution
       function 侦听(event:MouseEvent):void {
         var 行索引:int = 文本框.getLineIndexAtPoint(event.localX, event.localY);
         var 地址:String = 文本框.getLineText(行索引);
-        if(地址.length) {
+        if(地址.length && /^[a-z]/i.test(地址)) {
           EventBus.dispatchEvent(new CustomEvent(CustomEvent.添加地址规则, 地址));
           EventBus.dispatchEvent(new CustomEvent(CustomEvent.规则变化));
         }
