@@ -270,7 +270,7 @@ package me.army8735.xcution.net
           }
           if(映射.过滤) {
             var 新数据2:ByteArray = new ByteArray();
-            新数据2.writeUTFBytes(数据.toString().replace(/\b-debug\b/, ''));
+            新数据2.writeUTFBytes(数据.toString().replace(/\b-debug\b/g, ''));
             数据 = 新数据2;
           }
           break;
